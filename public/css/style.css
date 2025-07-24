@@ -2188,3 +2188,46 @@ textarea.input {
     margin-top: 10px;
   }
 }
+
+
+.btn-outline-light {
+  border: 2px solid white;
+  color: white;
+  font-weight: bold;
+}
+
+.btn-outline-light:hover {
+  background-color: white;
+  color: black;
+}
+
+/* Navigation link styles */
+.nav-link-custom {
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  position: relative;
+  transition: color 0.3s ease;
+  font-size: 1.7rem;
+  padding: 0.5rem 1rem;
+}
+
+.nav-link-custom:hover {
+  color: #ffc107; /* or white if you prefer */
+}
+
+/* Optional underline effect on hover */
+.nav-link-custom::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background-color: #ffc107;
+  transition: width 0.3s ease;
+}
+
+.nav-link-custom:hover::after {
+  width: 100%;
+}

@@ -2,12 +2,12 @@ const express = require("express");
 const app = express();
 const path = require("path")
 const env = require("dotenv").config()
-const db = require("./config/db");
+const connectDB = require("./config/db");
 const userRouter = require("./routes/userRouter")
 const adminRouter = require("./routes/adminRouter")
 
 
-db();
+connectDB();
 
 
 
@@ -28,7 +28,7 @@ app.use("/admin", adminRouter);
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
-    console.log(`http://localhost:${PORT}`);
+    console.log(`Server running http://localhost:${PORT}`);
 })
 
 
