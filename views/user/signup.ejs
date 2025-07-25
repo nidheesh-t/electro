@@ -373,6 +373,12 @@
                 max-width: 100%;
             }
         }
+
+        .error-msg {
+            color: red;
+            font-size: 0.75rem;
+            display: none;
+        }
     </style>
 </head>
 
@@ -382,16 +388,19 @@
         <h1>Create Your Account</h1>
         <p class="subtitle">Join ElectroHub to access exclusive tech products and services</p>
 
-        <form method="post" action="/signup">
+        <form id="signform" method="post" action="/signup">
             <div class="form-row" style="margin-bottom: 5px;">
                 <div class="form-group">
                     <label for="firstName">First Name</label>
                     <input type="text" id="firstName" name="firstName" placeholder="Enter your first name" required>
+                    <div id="fname-error" class="error-msg"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="lastName">Last Name</label>
                     <input type="text" id="lastName" name="lastName" placeholder="Enter your last name" required>
+                    <div id="lname-error" class="error-msg"></div>
+
                 </div>
             </div>
 
@@ -399,26 +408,35 @@
                 <label for="phone">Phone Number</label>
                 <div class="phone-input-container">
                     <div class="country-code">+91</div>
-                    <input type="tel" id="phone" name="phone" class="phone-input" placeholder="Enter 10-digit mobile number"
-                        pattern="[0-9]{10}" maxlength="10" required>
+                    <input type="tel" id="phone" name="phone" class="phone-input"
+                        placeholder="Enter 10-digit mobile number" pattern="[0-9]{10}" maxlength="10" required>
                 </div>
+                <div id="phone-error" class="error-msg"></div>
+
             </div>
 
             <div class="form-group">
                 <label for="email">Email address</label>
                 <input type="email" id="email" name="email" placeholder="your.email@example.com" required>
+                <div id="email-error" class="error-msg"></div>
+
             </div>
 
             <div class="form-group password-container">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" placeholder="Enter your password" required>
                 <span class="toggle-password">Show</span>
+                <div id="pass-error" class="error-msg"></div>
+
             </div>
 
             <div class="form-group password-container">
                 <label for="confirmPassword">Confirm Password</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password"
+                    required>
                 <span class="toggle-password">Show</span>
+                <div id="cpass-error" class="error-msg"></div>
+
             </div>
             <div class="checkbox-group" style="margin-bottom: 20px;">
                 <input type="checkbox" id="terms" required>
@@ -481,14 +499,178 @@
             if (this.value.length > 10) {
                 this.value = this.value.slice(0, 10);
             }
+            phoneValidateChecking();
         });
 
-        // Form submission
-        // document.querySelector('form').addEventListener('submit', function (e) {
-        //     e.preventDefault();
-        //     // Add form validation and submission logic here
-        //     alert('Account created successfully!');
-        // });
+        // Get form elements
+        const fnameid = document.getElementById("firstName");
+        const lnameid = document.getElementById("lastName");
+        const phoneid = document.getElementById("phone");
+        const emailid = document.getElementById("email");
+        const passid = document.getElementById("password");
+        const cpassid = document.getElementById("confirmPassword");
+        const termsCheckbox = document.getElementById("terms");
+
+        // Get error elements
+        const fnameError = document.getElementById("fname-error");
+        const lnameError = document.getElementById("lname-error");
+        const phoneError = document.getElementById("phone-error");
+        const emailError = document.getElementById("email-error");
+        const passError = document.getElementById("pass-error");
+        const cpassError = document.getElementById("cpass-error");
+        const signform = document.getElementById("signform");
+
+        // Add event listeners for real-time validation
+        fnameid.addEventListener('input', fnameValidateChecking);
+        lnameid.addEventListener('input', lnameValidateChecking);
+        emailid.addEventListener('input', emailValidateChecking);
+        passid.addEventListener('input', passValidateChecking);
+        cpassid.addEventListener('input', confirmPassValidateChecking);
+
+        function fnameValidateChecking() {
+            const fnameval = fnameid.value.trim();
+            const namePattern = /^[A-Za-z]+$/;
+
+            if (fnameval === "") {
+                showError(fnameError, "First name is required");
+                return false;
+            }
+            if (!namePattern.test(fnameval)) {
+                showError(fnameError, "Name can only contain letters");
+                return false;
+            }
+            hideError(fnameError);
+            return true;
+        }
+
+        function lnameValidateChecking() {
+            const lnameval = lnameid.value.trim();
+            const namePattern = /^[A-Za-z]+$/;
+
+            if (lnameval === "") {
+                showError(lnameError, "Last name is required");
+                return false;
+            }
+            if (!namePattern.test(lnameval)) {
+                showError(lnameError, "Name can only contain letters");
+                return false;
+            }
+            hideError(lnameError);
+            return true;
+        }
+
+        function phoneValidateChecking() {
+            const phoneval = phoneid.value.trim();
+            const phonePattern = /^[0-9]+$/;
+
+            if (phoneval === "") {
+                showError(phoneError, "Phone number is required");
+                return false;
+            }
+            if (phoneval.length !== 10) {
+                showError(phoneError, "Must be 10 digits");
+                return false;
+            }
+            if (!phonePattern.test(phoneval)) {
+                showError(phoneError, "Only numbers allowed");
+                return false;
+            }
+            hideError(phoneError);
+            return true;
+        }
+
+        function emailValidateChecking() {
+            const emailval = emailid.value.trim();
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (emailval === "") {
+                showError(emailError, "Email is required");
+                return false;
+            }
+            if (!emailPattern.test(emailval)) {
+                showError(emailError, "Invalid email format");
+                return false;
+            }
+            hideError(emailError);
+            return true;
+        }
+
+        function passValidateChecking() {
+            const passval = passid.value;
+            const alpha = /[A-Za-z]/;
+            const digit = /[0-9]/;
+
+            if (passval.trim() === "") {
+                showError(passError, "Password is required");
+                return false;
+            }
+            if (passval.length < 6) {
+                showError(passError, "Must be at least 6 characters");
+                return false;
+            }
+            if (!alpha.test(passval) || !digit.test(passval)) {
+                showError(passError, "Must contain letters and numbers");
+                return false;
+            }
+            hideError(passError);
+
+            // Also validate confirm password when password changes
+            if (cpassid.value) {
+                confirmPassValidateChecking();
+            }
+            return true;
+        }
+
+        function confirmPassValidateChecking() {
+            const passval = passid.value;
+            const cpassval = cpassid.value;
+
+            if (cpassval.trim() === "") {
+                showError(cpassError, "Please confirm your password");
+                return false;
+            }
+            if (passval !== cpassval) {
+                showError(cpassError, "Passwords don't match");
+                return false;
+            }
+            hideError(cpassError);
+            return true;
+        }
+
+        function validateTerms() {
+            if (!termsCheckbox.checked) {
+                // You might want to add an error display for terms
+                return false;
+            }
+            return true;
+        }
+
+        function showError(element, message) {
+            element.style.display = "block";
+            element.textContent = message;
+        }
+
+        function hideError(element) {
+            element.style.display = "none";
+            element.textContent = "";
+        }
+
+        signform.addEventListener("submit", function (e) {
+            // Validate all fields
+            const isFnameValid = fnameValidateChecking();
+            const isLnameValid = lnameValidateChecking();
+            const isPhoneValid = phoneValidateChecking();
+            const isEmailValid = emailValidateChecking();
+            const isPassValid = passValidateChecking();
+            const isConfirmPassValid = confirmPassValidateChecking();
+            const isTermsValid = validateTerms();
+
+            // Prevent submission if any validation fails
+            if (!isFnameValid || !isLnameValid || !isPhoneValid ||
+                !isEmailValid || !isPassValid || !isConfirmPassValid || !isTermsValid) {
+                e.preventDefault();
+            }
+        });
     </script>
 </body>
 
