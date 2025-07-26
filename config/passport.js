@@ -13,11 +13,19 @@ passport.use(new GoogleStrategy({
 },
     async (accessToken, refreshToken, profile, done) => {
         try {
-            let user = await User.findOne({ googleId: profile.id })
-
+            let user = await User.findOne({ googleId: profile.id });
             if (user) {
                 return done(null, user);
             }
+
+            const email = profile.emails[0].value;
+            user = await User.findOne({ email: email });
+            if (user) {
+                user.googleId = profile.id;
+                await user.save();
+                return done(null, user);
+            }
+
             user = new User({
                 firstName: profile.name.givenName,
                 lastName: profile.name.familyName,
@@ -47,7 +55,6 @@ passport.deserializeUser(async (id, done) => {
         done(error, null);
     }
 })
-
 
 
 module.exports = passport;
