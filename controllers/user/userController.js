@@ -25,7 +25,7 @@ async function sendVerificationEmail(email, otp) {
             to: email,
             subject: 'Verify your account',
             text: `Your OTP is ${otp}`,
-            html: `<p>Hello,</p><p>Your OTP for registration is <strong>${otp}</strong></p>`
+            html: `<p style="font-size: 1.1rem;">Hello,</p><p style="font-size: 1.1rem;">Your OTP for registration is <strong>${otp}</strong></p>`
         });
 
         return info.accepted.length > 0;

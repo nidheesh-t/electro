@@ -8,6 +8,7 @@ const nocache = require("nocache")
 const connectDB = require("./config/db");
 const userRouter = require("./routes/userRouter")
 const adminRouter = require("./routes/adminRouter")
+const passport = require("./config/passport")
 
 
 connectDB();
@@ -26,6 +27,9 @@ app.use(session({
         maxAge: 24 * 60 * 60 * 1000
     }
 }))
+
+app.use(passport.initialize()) // init passport on every route call
+app.use(passport.session())    //allow passport to use "express-session"
 
 // app.use(nocache());
 
