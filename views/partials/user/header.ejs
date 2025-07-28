@@ -34,6 +34,69 @@
 		  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 		  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 		<![endif]-->
+	<style>
+		.dropdown {
+			position: relative;
+			display: inline-block;
+		}
+
+		.sign-in-link {
+			color: #ffffff;
+			font-weight: 500;
+			text-decoration: none;
+			transition: all 0.3s;
+			font-size: 2rem;
+		}
+
+		.sign-in-link:hover {
+			color: #2874f0;
+		}
+
+		.dropdown-content {
+			display: none;
+			position: absolute;
+			background-color: white;
+			min-width: 180px;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+			border-radius: 4px;
+			z-index: 1000;
+			right: 0;
+			top: 100%;
+			border: 1px solid #e0e0e0;
+			padding: 8px 0;
+		}
+
+		.dropdown-content a {
+			color: #333;
+			padding: 10px 16px;
+			text-decoration: none;
+			display: block;
+			font-size: 1.7rem;
+			transition: all 0.2s;
+		}
+
+		.dropdown-content a:hover {
+			background-color: #f5f5f5;
+			color: #2874f0;
+		}
+
+		.dropdown:hover .dropdown-content {
+			display: block;
+			animation: fadeIn 0.2s ease-in-out;
+		}
+
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+				transform: translateY(-5px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+	</style>
 
 </head>
 
@@ -57,7 +120,8 @@
 					</div>
 					<!-- /LOGO -->
 					<!-- NAVIGATION LINKS -->
-					<div class="col-md-6 d-flex justify-content-center align-items-center gap-4 nav-links" style="margin-top: 25px;">
+					<div class="col-md-6 d-flex justify-content-center align-items-center gap-4 nav-links"
+						style="padding: 20px;">
 						<a href="#" class="nav-link-custom">HOME</a>
 						<a href="#" class="nav-link-custom">PRODUCTS</a>
 						<a href="#" class="nav-link-custom">ABOUT US</a>
@@ -67,8 +131,24 @@
 
 					<!-- LOGIN/SIGNUP -->
 					<div class="col-md-3 d-flex justify-content-end align-items-center gap-2" style="padding: 20px;">
-						<a href="/login" class="btn btn-outline-light fw-bold px-4">LOGIN</a>
-						<a href="/signup" class="btn btn-outline-light fw-bold px-4">SIGN UP</a>
+						<% if(locals.user) { %>
+							<div class="dropdown">
+								<a href="#" class="sign-in-link d-flex align-items-center gap-2">
+									<i class="fa fa-user-circle" style="font-size: 1.7rem;"></i>
+									<span>
+										<%= locals.user.firstName.toUpperCase() %>
+											<%= locals.user.lastName.toUpperCase() %>
+									</span>
+								</a>
+								<div class="dropdown-content">
+									<a href="/userProfile"><i class="fa fa-user mr-2"></i> Profile</a>
+									<a href="/logout"><i class="fa fa-sign-out mr-2"></i> Logout</a>
+								</div>
+							</div>
+							<% } else { %>
+								<a href="/login" class="btn btn-outline-light fw-bold px-4">LOGIN</a>
+								<a href="/signup" class="btn btn-outline-light fw-bold px-4">SIGN UP</a>
+								<% } %>
 					</div>
 					<!-- /LOGIN/SIGNUP -->
 

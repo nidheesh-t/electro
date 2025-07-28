@@ -304,6 +304,37 @@
                 max-width: 100%;
             }
         }
+
+        /* Error message styling */
+        .error-message {
+            color: var(--error);
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        /* Alert styling */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .alert-danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--error);
+        }
+
+        /* Form validation styling */
+        input.error {
+            border-color: var(--error);
+        }
+
+        input.success {
+            border-color: var(--success);
+        }
     </style>
 </head>
 
@@ -314,16 +345,20 @@
         <h1>Welcome Back</h1>
         <p class="subtitle">Login to your ElectroHub account to access exclusive tech products and services</p>
 
-        <form>
+        <form id="loginform" method="post" action="/login">
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" id="email" placeholder="your.email@example.com" required>
+                <input class="form-control" name="email" type="email" id="email" placeholder="your.email@example.com"
+                    required>
+                <div id="error1" class="error-message"></div>
             </div>
 
             <div class="form-group password-container">
                 <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Enter your password" required>
+                <input class="form-control" name="password" type="password" id="password"
+                    placeholder="Enter your password" required>
                 <span class="toggle-password">Show</span>
+                <div id="error2" class="error-message"></div>
             </div>
 
             <div class="options-row">
@@ -333,8 +368,12 @@
                 </div>
                 <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
             </div>
-
-            <button type="submit">Login</button>
+            <%if(locals.message && message.length>0){%>
+                <div class="alert alert-danger text-center">
+                    <%=message%>
+                </div>
+                <%}%>
+                    <button type="submit">Login</button>
         </form>
 
         <p class="signup-prompt">Don't have an account? <a href="/signup">Sign up</a></p>
@@ -370,7 +409,14 @@
         </div>
     </div>
 
+
     <script>
+        const emailid = document.getElementById("email");
+        const passid = document.getElementById("password");
+        const emailError = document.getElementById("error1");
+        const passError = document.getElementById("error2");
+        const loginform = document.getElementById("loginform");
+
         // Toggle password visibility
         document.querySelectorAll('.toggle-password').forEach(function (element) {
             element.addEventListener('click', function () {
@@ -381,11 +427,66 @@
             });
         });
 
-        // Form submission
-        document.querySelector('form').addEventListener('submit', function (e) {
-            e.preventDefault();
-            // Add form validation and submission logic here
-            alert('Login successful!');
+        // Add event listeners for real-time validation
+        // emailid.addEventListener('input', emailValidateChecking);
+        // passid.addEventListener('input', passValidateChecking);
+
+        function showError(element, message) {
+            element.textContent = message;
+            element.style.display = "block";
+        }
+
+        function hideError(element) {
+            element.textContent = "";
+            element.style.display = "none";
+        }
+
+        function emailValidateChecking() {
+            const emailval = emailid.value.trim();
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (emailval === "") {
+                showError(emailError, "Email is required");
+                return false;
+            }
+            if (!emailPattern.test(emailval)) {
+                showError(emailError, "Invalid email format");
+                return false;
+            }
+            hideError(emailError);
+            return true;
+        }
+
+        function passValidateChecking() {
+            const passval = passid.value;
+            const alpha = /[A-Za-z]/;
+            const digit = /[0-9]/;
+
+            if (passval.trim() === "") {
+                showError(passError, "Password is required");
+                return false;
+            }
+            if (passval.length < 6) {
+                showError(passError, "Must be at least 6 characters");
+                return false;
+            }
+            if (!alpha.test(passval) || !digit.test(passval)) {
+                showError(passError, "Must contain letters and numbers");
+                return false;
+            }
+            hideError(passError);
+            return true;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            loginform.addEventListener("submit", function (e) {
+                const isEmailValid = emailValidateChecking();
+                const isPassValid = passValidateChecking();
+
+                if (!isEmailValid || !isPassValid) {
+                    e.preventDefault();
+                }
+            });
         });
     </script>
 </body>

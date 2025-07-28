@@ -383,6 +383,19 @@
         a {
             text-decoration: none;
         }
+        /* Alert styling */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .alert-danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--error);
+        }
     </style>
 </head>
 
@@ -446,8 +459,12 @@
                 <input type="checkbox" id="terms" required>
                 <label for="terms">I agree to the <a href="#">Terms</a> and <a href="#">Privacy Policy</a></label>
             </div>
-
-            <button type="submit">Create Account</button>
+            <%if(locals.message && message.length>0){%>
+                <div class="alert alert-danger text-center">
+                    <%=message%>
+                </div>
+                <%}%>
+                    <button type="submit">Create Account</button>
         </form>
 
 

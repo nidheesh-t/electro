@@ -11,6 +11,8 @@ router.get("/", userController.loadHomepage)
 router.get("/signup", userController.loadSignup)
 router.post("/signup", userController.signup)
 router.get("/login", userController.loadLogin)
+router.post("/login", userController.login)
+
 router.post("/verify-otp", userController.verifyOtp)
 router.post("/resend-otp", userController.resendOtp)
 
@@ -27,6 +29,7 @@ router.get('/auth/google/callback',
         failureRedirect: '/login'
     }));
 
+router.get("/logout", userController.logout)
 
 
 module.exports = router;
