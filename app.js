@@ -11,9 +11,7 @@ const adminRouter = require("./routes/adminRouter");
 const passport = require("./config/passport");
 const User = require("./models/userSchema");
 
-// if (!process.env.SESSION_SECRET || !process.env.MONGO_URI) {
-//     throw new Error("Missing required environment variables");
-// }
+
 
 connectDB();
 
@@ -53,9 +51,6 @@ app.use(async (req, res, next) => {
             req.session.destroy();
         }
     }
-    /*else if (req.isAuthenticated()) {
-        res.locals.user = req.user;
-    }*/
     next();
 });
 

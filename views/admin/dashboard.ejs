@@ -1,0 +1,88 @@
+<%- include("../../views/partials/admin/header") %>
+
+
+    <!-- Main Content -->
+    <main style="margin-left: 260px; padding: 20px;">
+        <!-- Dashboard Cards -->
+        <div class="row dashboard-cards">
+            <div class="col s12 m6 l3">
+                <div class="card white z-depth-2">
+                    <div class="card-content center">
+                        <span class="card-title">Sales</span>
+                        <h5>0</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col s12 m6 l3">
+                <div class="card white z-depth-2">
+                    <div class="card-content center">
+                        <span class="card-title">Orders</span>
+                        <h5>0</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col s12 m6 l3">
+                <div class="card white z-depth-2">
+                    <div class="card-content center">
+                        <span class="card-title">Products</span>
+                        <h5><%= productCount %></h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col s12 m6 l3">
+                <div class="card white z-depth-2">
+                    <div class="card-content center">
+                        <span class="card-title">Users</span>
+                        <h5><%= userCount %></h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Table -->
+        <div class="card table-section">
+            <div class="card-content">
+                <span class="card-title">Recent Products</span>
+                <table class="highlight responsive-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Brand</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Smartphone</td>
+                            <td>Samsung</td>
+                            <td>Electronics</td>
+                            <td>$299</td>
+                            <td>23</td>
+                            <td><span class="green-text">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td>Headphones</td>
+                            <td>Sony</td>
+                            <td>Accessories</td>
+                            <td>$99</td>
+                            <td>12</td>
+                            <td><span class="green-text">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td>Backpack</td>
+                            <td>Nike</td>
+                            <td>Travel</td>
+                            <td>$45</td>
+                            <td>0</td>
+                            <td><span class="red-text">Out of Stock</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <%- include("../../views/partials/admin/footer") %>
