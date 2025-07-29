@@ -39,13 +39,19 @@ async function sendVerificationEmail(email, otp) {
 
 const loadHomepage = async (req, res) => {
     try {
-        const user = req.session.user;
+        let user;
+
+        if (req.session.user) {
+            user = await User.findById({ _id: req.session.user });
+        } else if (req.user) {
+            user = req.user;
+            req.session.user = user._id;
+        }
 
         if (user) {
-            const userData = await User.findById({ _id: user })
-            res.render("home", { user: userData });
+            return res.render("home", { user });
         } else {
-            return res.render("home");
+            return res.render("home")
         }
 
     } catch (error) {
@@ -216,18 +222,28 @@ const resendOtp = async (req, res) => {
 
 const logout = async (req, res) => {
     try {
-        req.session.destroy((err) => {
+        req.logout((err) => {
             if (err) {
-                console.log("Session destroy error", err.message);
-                return res.redirect("/pagenotFound");
+                console.error("Passport logout error:", err);
+                return res.status(500).send("Logout failed");
             }
-            return res.redirect("/login");
-        })
+            req.session.destroy((err) => {
+                if (err) {
+                    console.error("Session destroy error:", err);
+                    return res.status(500).send("Logout failed");
+                }
+                res.clearCookie("connect.sid");
+                res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+                res.setHeader("Pragma", "no-cache");
+                res.setHeader("Expires", "0");
+                res.redirect("/login");
+            });
+        });
     } catch (error) {
-        console.log("Logout error", error.message);
-        res.redirect("/pagenotFound");
+        console.error("Logout error:", error);
+        res.status(500).send("Internal server error");
     }
-}
+};
 
 
 module.exports = {
