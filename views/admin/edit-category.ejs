@@ -1,0 +1,106 @@
+<%- include("../../views/partials/admin/header") %>
+
+<main>
+  <div class="container">
+    <div class="section">
+      <h4 class="blue-text text-darken-2">Edit Category</h4>
+    </div>
+
+    <div class="row">
+      <div class="col s12 m8 offset-m2">
+        <div class="card">
+          <div class="card-content">
+            <span class="card-title">Update Category</span>
+
+            <form id="editCategoryForm" onsubmit="return handleEditSubmit(event)">
+              <input type="hidden" id="categoryId" value="<%= category._id %>">
+
+              <div class="input-field">
+                <input id="edit_category_name" name="categoryName" type="text" value="<%= category.categoryName %>" required>
+                <label for="edit_category_name" class="active">Category Name</label>
+                <span id="edit-name-error" class="red-text text-darken-2"></span>
+              </div>
+
+              <div class="input-field">
+                <textarea id="edit_description" name="description" class="materialize-textarea" required><%= category.description %></textarea>
+                <label for="edit_description" class="active">Description</label>
+                <span id="edit-description-error" class="red-text text-darken-2"></span>
+              </div>
+
+              <button class="btn waves-effect waves-light blue darken-2" type="submit">
+                Update
+                <i class="material-icons right">save</i>
+              </button>
+              <a href="/admin/category" class="btn grey lighten-1 right">Cancel</a>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+<script>
+  function handleEditSubmit(event) {
+    event.preventDefault();
+    if (!validateEditForm()) return;
+
+    const id = document.getElementById("categoryId").value;
+    const categoryName = document.getElementById("edit_category_name").value.trim();
+    const description = document.getElementById("edit_description").value.trim();
+
+    fetch(`/admin/editCategory/${id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ categoryName, description }),
+    })
+    .then(res => {
+      if (!res.ok) return res.json().then(err => { throw new Error(err.error); });
+      return res.json();
+    })
+    .then(data => {
+      Swal.fire({ icon: "success", title: "Updated", text: data.message })
+        .then(() => window.location.href = "/admin/category");
+    })
+    .catch(err => {
+      Swal.fire({ icon: "error", title: "Update Failed", text: err.message });
+    });
+  }
+
+  function validateEditForm() {
+    clearEditErrors();
+    let isValid = true;
+    const name = document.getElementById("edit_category_name").value.trim();
+    const desc = document.getElementById("edit_description").value.trim();
+
+    if (name === "") {
+      showEditError("edit-name-error", "Please enter a name");
+      isValid = false;
+    } else if (!/^[a-zA-Z\s]+$/.test(name)) {
+      showEditError("edit-name-error", "Only letters and spaces allowed");
+      isValid = false;
+    }
+
+    if (desc === "") {
+      showEditError("edit-description-error", "Please enter a description");
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  function showEditError(id, message) {
+    const el = document.getElementById(id);
+    el.innerText = message;
+    el.style.display = "block";
+  }
+
+  function clearEditErrors() {
+    document.querySelectorAll("span.red-text").forEach(el => el.innerText = "");
+  }
+</script>
+
+<%- include("../../views/partials/admin/footer") %>

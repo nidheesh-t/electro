@@ -6,8 +6,8 @@ const categorySchema = new Schema({
         type: String,
         required: true,
         unique: true,
-        // trim: true,
-        // lowercase: true,
+        trim: true,
+        lowercase: true
     },
     description: {
         type: String,
