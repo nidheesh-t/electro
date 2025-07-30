@@ -6,15 +6,19 @@ const brandSchema = new Schema({
         type: String,
         required: true,
         unique: true,
-        // trim: true
+        trim: true
     },
     brandLogo: {
-        type: [String],
+        type: String,
         default: null
     },
     isListed: {
         type: Boolean,
         default: true
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 

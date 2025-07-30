@@ -1,0 +1,223 @@
+<%- include("../../views/partials/admin/header") %>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .btn {
+            border-radius: 8px;
+        }
+
+        .table-section {
+            margin-top: 20px;
+        }
+
+        .brand-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid #ddd;
+        }
+
+        .pagination li a {
+            color: #1565c0;
+        }
+
+        .pagination li.active a {
+            background-color: #1565c0;
+            color: white;
+        }
+
+        .container {
+            max-width: 95%;
+        }
+    </style>
+
+    <main class="container" style="margin-left: 270px; padding-top: 30px;">
+        <h4 class="center-align blue-text text-darken-2">Brands Management</h4>
+
+        <div class="row">
+            <!-- Add Brand Form -->
+            <div class="col s12 m4">
+                <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">Add New Brand</span>
+                        <form method="POST" action="/admin/addBrand" enctype="multipart/form-data">
+                            <div class="input-field">
+                                <input id="brand_name" name="brandName" type="text" required>
+                                <label for="brand_name">Brand Name</label>
+                            </div>
+                            <div class="file-field input-field">
+                                <div class="btn blue darken-2">
+                                    <span>Upload Logo</span>
+                                    <input type="file" name="image" required>
+                                </div>
+                                <div class="file-path-wrapper">
+                                    <input class="file-path validate" type="text" placeholder="Upload brand image">
+                                </div>
+                            </div>
+                            <div class="center-align">
+                                <button class="btn blue darken-2 waves-effect waves-light" type="submit">Add
+                                    Brand</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Brand Table -->
+            <div class="col s12 m8">
+                <div class="card table-section">
+                    <div class="card-content">
+                        <span class="card-title">Brand List</span>
+                        <table class="highlight responsive-table centered">
+                            <thead class="blue-text text-darken-2">
+                                <tr>
+                                    <th>Brand Name</th>
+                                    <th>Logo</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% data.reverse().forEach(brand=> { %>
+                                    <tr>
+                                        <td>
+                                            <%= brand.brandName %>
+                                        </td>
+                                        <td>
+                                            <img src="/uploads/re-image/<%= brand.brandLogo %>"
+                                                alt="<%= brand.brandName %>" class="brand-image">
+                                        </td>
+                                        <td>
+                                            <span class="new badge <%= brand.isListed ? 'green' : 'red' %>"
+                                                data-badge-caption="<%= brand.isListed ? 'Listed' : 'Unlisted' %>"></span>
+                                        </td>
+                                        <td>
+                                            <% if (brand.isListed) { %>
+                                                <a href="/admin/unlistBrand?id=<%= brand._id %>"
+                                                    class="btn-small red lighten-1">Unlist</a>
+                                                <% } else { %>
+                                                    <a href="/admin/listBrand?id=<%= brand._id %>"
+                                                        class="btn-small green lighten-1">List</a>
+                                                    <% } %>
+                                                        <a href="/admin/editBrand?id=<%= brand._id %>"
+                                                            class="btn-small orange darken-2">Edit</a>
+                                                        <a href="/admin/deleteBrand?id=<%= brand._id %>"
+                                                            class="btn-small grey darken-1 delete-btn">Delete</a>
+
+                                        </td>
+
+                                    </tr>
+                                    <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="center-align">
+                    <ul class="pagination">
+                        <% if (currentPage> 1) { %>
+                            <li class="waves-effect"><a href="?page=<%= currentPage - 1 %>"><i
+                                        class="material-icons">chevron_left</i></a></li>
+                            <% } %>
+                                <% for (let i=1; i <=totalPages; i++) { %>
+                                    <li class="<%= i === currentPage ? 'active' : 'waves-effect' %>">
+                                        <a href="?page=<%= i %>">
+                                            <%= i %>
+                                        </a>
+                                    </li>
+                                    <% } %>
+                                        <% if (currentPage < totalPages) { %>
+                                            <li class="waves-effect"><a href="?page=<%= currentPage + 1 %>"><i
+                                                        class="material-icons">chevron_right</i></a></li>
+                                            <% } %>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const successMsg = urlParams.get('success');
+            const errorMsg = urlParams.get('error');
+
+            // Actions that don't need close button (auto-dismiss)
+            const quickActions = ["listed", "unlisted", "added", "updated", "deleted"];
+
+            if (successMsg) {
+                const lowerMsg = successMsg.toLowerCase();
+                const needsAutoClose = quickActions.some(action => lowerMsg.includes(action));
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: decodeURIComponent(successMsg),
+                    showConfirmButton: !needsAutoClose,
+                    confirmButtonText: 'Close',
+                    timer: needsAutoClose ? 2000 : null,
+                    timerProgressBar: needsAutoClose,
+                }).then(() => {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                });
+            }
+
+            if (errorMsg) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: decodeURIComponent(errorMsg),
+                    showConfirmButton: true,
+                    confirmButtonText: 'Close',
+                    timer: null,
+                    timerProgressBar: true,
+                }).then(() => {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                });
+            }
+        });
+    </script>
+    <script>
+        // Attach event listener for delete buttons to confirm before delete
+        document.querySelectorAll('a.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function (event) {
+                event.preventDefault(); // prevent normal navigation
+
+                const url = this.href;
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This action cannot be undone!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // If confirmed, redirect to the delete URL
+                        window.location.href = url;
+                    }
+                });
+            });
+        });
+    </script>
+
+
+
+    <%- include("../../views/partials/admin/footer") %>
