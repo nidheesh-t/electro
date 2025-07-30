@@ -14,12 +14,20 @@ passport.use(new GoogleStrategy({
     async (accessToken, refreshToken, profile, done) => {
         try {
             let user = await User.findOne({ googleId: profile.id });
-            if (user) return done(null, user);
+            if (user) {
+                if (user.isBlock) {
+                    return done(null, false, { message: "User is blocked by admin" });
+                }
+                return done(null, user);
+            }
 
             const email = profile.emails[0].value;
             user = await User.findOne({ email: email });
-            
+
             if (user) {
+                if (user.isBlock) {
+                    return done(null, false, { message: "User is blocked by admin" });
+                }
                 user.googleId = profile.id;
                 await user.save();
                 return done(null, user);

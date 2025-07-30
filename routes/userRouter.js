@@ -15,7 +15,7 @@ router.post("/resend-otp", userController.resendOtp);
 router.get("/auth/google", passport.authenticate("google", { scope: ["email", "profile"] }));
 router.get(
     "/auth/google/callback",
-    passport.authenticate("google", { failureRedirect: "/login" }),
+    passport.authenticate("google", { failureRedirect: "/login", failureMessage: true }),
     (req, res) => {
         req.session.user = req.user._id;
         res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");

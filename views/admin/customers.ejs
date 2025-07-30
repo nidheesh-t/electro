@@ -1,0 +1,354 @@
+<%- include("../../views/partials/admin/header") %>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    body {
+      background-color: #f4f6fc;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    h2.content-title {
+      color: #3949ab;
+      font-weight: 600;
+    }
+
+    .search-form .btn {
+      background-color: #3949ab;
+      color: white;
+    }
+
+    .table thead {
+      background-color: #e8eaf6;
+      color: #303f9f;
+    }
+
+    .btn-edit {
+      background-color: #5c6bc0;
+      color: white;
+    }
+
+    .btn-edit:hover {
+      background-color: #3f51b5;
+    }
+
+    .btn-danger,
+    .btn-success {
+      font-weight: 500;
+    }
+
+    .badge {
+      font-size: 0.8rem;
+      padding: 5px 10px;
+      border-radius: 12px;
+    }
+
+    tbody tr:nth-child(odd) {
+      background-color: #ffffff;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f0f4ff;
+    }
+
+    td.d-flex.gap-2>a {
+      margin-right: 10px;
+    }
+
+    .pagination {
+      justify-content: center;
+    }
+
+    .pagination .page-item .page-link {
+      background-color: transparent;
+      color: #eaebf1;
+      border: none;
+      padding: 6px 12px;
+      margin: 0 3px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+    }
+
+    .pagination .page-item.active .page-link {
+      background-color: #3949ab;
+      color: white;
+      border-radius: 4px;
+    }
+
+    .pagination .page-item .page-link:hover {
+      background-color: #d1d9ff;
+    }
+
+    .table th,
+    .table td {
+      vertical-align: middle;
+    }
+
+    .pagination li.active {
+      background-color: #ee6e7200;
+    }
+
+    .btn-danger,
+    .btn-success {
+      padding: 6px 14px;
+      min-width: 80px;
+      height: 36px;
+      border-radius: 5px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-danger {
+      background-color: #e74c3c;
+    }
+
+    .btn-danger:hover {
+      background-color: #c0392b;
+    }
+
+    .btn-success {
+      background-color: #27ae60;
+    }
+
+    .btn-success:hover {
+      background-color: #1e8449;
+    }
+
+    .badge {
+      font-size: 0.8rem;
+      padding: 5px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+      color: white;
+      display: inline-block;
+      min-width: 70px;
+      text-align: center;
+    }
+
+    .badge.red {
+      background-color: #e74c3c;
+    }
+
+    .badge.green {
+      background-color: #27ae60;
+    }
+    #search-btn {
+      margin: 10px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      background-color: #3949ab;
+      color: white;
+      border-radius: 0 30px 30px 0;
+
+    }
+
+    
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      .search-form form {
+        flex-direction: column !important;
+        max-width: 100% !important;
+        gap: 10px;
+      }
+
+      .search-form input.form-control,
+      .search-form button.btn {
+        border-radius: 30px !important;
+        width: 100% !important;
+      }
+
+      .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      td.d-flex.gap-2 {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      td.d-flex.gap-2>a {
+        margin-right: 0 !important;
+        flex-grow: 1;
+        text-align: center;
+      }
+
+      .table thead th,
+      .table tbody td {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+      }
+
+      h2.content-title {
+        font-size: 1.5rem;
+        text-align: center;
+      }
+    }
+    .btn-secondary {
+      background-color: #aaa;
+      color: white;
+      font-weight: 600;
+    }
+    .btn-secondary:hover {
+      background-color: #888;
+    }
+
+
+    @media (max-width: 480px) {
+      .pagination .page-item .page-link {
+        padding: 4px 8px;
+        font-size: 0.85rem;
+        margin: 0 2px;
+      }
+    }
+  </style>
+
+  <div class="container mt-5">
+
+    <div class="content-header row mb-4">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2 class="content-title card-title">Customers</h2>
+      </div>
+    </div>
+
+    <!-- Search Form -->
+    <header class="text-center mb-4 search-form">
+      <form action="/admin/users" method="get" class="d-flex justify-content-center">
+        <div class="input-group input-group-sm" style="max-width: 500px;">
+          <input type="text" class="form-control rounded-start-pill" placeholder="Search customers..." name="search" value="<%= search %>">
+          <button class="btn rounded-end-pill px-4" type="submit" id="search-btn">Search</button>
+          <% if (search) { %>
+            <a href="/admin/users" class="btn btn-secondary ms-2 rounded-pill px-4">Clear</a>
+          <% } %>
+        </div>
+      </form>
+
+    </header>
+
+    <!-- Customer Table -->
+    <div class="table-responsive">
+      <table class="table table-hover align-middle shadow-sm">
+        <thead>
+          <tr>
+            <th><b>#</b></th> <!-- Serial Number -->
+            <th><b>Name</b></th>
+            <th><b>Email</b></th>
+            <th><b>Phone No</b></th>
+            <th><b>Status</b></th>
+            <th><b>Actions</b></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% for(let i=0; i < data.length; i++) { %>
+            <tr>
+              <td>
+                <%= (currentPage - 1) * 5 + i + 1 %>
+              </td> <!-- Calculate serial number with pagination -->
+              <td>
+                <%= data[i].firstName %> <%= data[i].lastName %> 
+              </td>
+              <td>
+                <%= data[i].email %>
+              </td>
+              <td>
+                <%= data[i].phone %>
+              </td>
+              <td>
+                <% if(data[i].isBlock) { %>
+                  <span class="badge red white-text">Blocked</span>
+                  <% } else { %>
+                    <span class="badge green white-text">Active</span>
+                    <% } %>
+              </td>
+              <td class="d-flex gap-2">
+
+                <% if(!data[i].isBlock) { %>
+                  <button class="btn btn-danger btn-sm" onclick="confirmBlock('<%= data[i]._id %>')">Block</button>
+
+                  <% } else { %>
+                    <button class="btn btn-success btn-sm" onclick="confirmUnblock('<%= data[i]._id %>')">Unblock</button>
+
+                    <% } %>
+                      <a href="/admin/editCustomer/<%= data[i]._id %>" class="btn btn-edit btn-sm">Edit</a>
+              </td>
+            </tr>
+            <% } %>
+        </tbody>
+      </table>
+    </div>
+    <br>
+
+    <!-- Pagination -->
+    <!-- Pagination Below the Table -->
+    <div class="center-align">
+      <ul class="pagination">
+        <% if (currentPage > 1) { %>
+          <li class="waves-effect"><a href="?page=<%= currentPage - 1 %>"><i class="material-icons">chevron_left</i></a></li>
+        <% } else { %>
+          <li class="disabled"><a><i class="material-icons">chevron_left</i></a></li>
+        <% } %>
+
+        <% for (let i = 1; i <= totalPages; i++) { %>
+          <li class="<%= i === currentPage ? 'active blue' : 'waves-effect' %>">
+            <a href="?page=<%= i %>"><%= i %></a>
+          </li>
+        <% } %>
+
+        <% if (currentPage < totalPages) { %>
+          <li class="waves-effect"><a href="?page=<%= currentPage + 1 %>"><i class="material-icons">chevron_right</i></a></li>
+        <% } else { %>
+          <li class="disabled"><a><i class="material-icons">chevron_right</i></a></li>
+        <% } %>
+      </ul>
+    </div>
+
+  </div>
+  
+  <script>
+  function confirmBlock(userId) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You want to block this user!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes, block!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const search = new URLSearchParams(window.location.search).get("search") || "";
+        const page = new URLSearchParams(window.location.search).get("page") || 1;
+        window.location.href = `/admin/blockCustomer?id=${userId}&page=${page}&search=${search}`;
+      }
+    });
+  }
+
+  function confirmUnblock(userId) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You want to unblock this user!",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#28a745',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes, unblock!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const search = new URLSearchParams(window.location.search).get("search") || "";
+        const page = new URLSearchParams(window.location.search).get("page") || 1;
+        window.location.href = `/admin/unblockCustomer?id=${userId}&page=${page}&search=${search}`;
+      }
+    });
+  }
+</script>
+
+  <%- include("../../views/partials/admin/footer") %>

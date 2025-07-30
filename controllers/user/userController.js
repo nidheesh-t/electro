@@ -118,13 +118,15 @@ const signup = async (req, res) => {
 const loadLogin = async (req, res) => {
     try {
         if (!req.session.user) {
-            return res.render("login");
+            const message = req.session.messages ? req.session.messages[0] : null;
+            req.session.messages = [];
+            return res.render("login", { message });
         } else {
             res.redirect("/");
         }
 
     } catch (error) {
-        console.log("Login page not found");
+        console.log("Login page not found", error);
         res.redirect("/pageNotFound");
     }
 }
