@@ -5,6 +5,9 @@ const bcrypt = require('bcryptjs');
 
 
 const customerInfo = async (req, res) => {
+    if (!req.session.admin) {
+        return res.redirect('/admin/login');
+    }
     try {
         let search = req.query.search || "";
         let page = parseInt(req.query.page) || 1;

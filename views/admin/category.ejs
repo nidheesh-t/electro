@@ -1,9 +1,13 @@
 <%- include("../../views/partials/admin/header") %>
 
+    <!-- Prevent browser caching -->
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, private">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <style>
         main {
             margin-left: auto;
-            /* match sidenav width */
             padding: auto;
             min-height: 100vh;
             background-color: #f9f9f9;
@@ -30,14 +34,12 @@
             margin-bottom: 25px;
         }
 
-        /* Form input styling */
         .input-field input[type="text"],
         .input-field textarea {
             font-size: 1.1rem;
             padding: 10px 12px;
         }
 
-        /* Button styling */
         button.btn {
             width: 100%;
             font-weight: 600;
@@ -45,7 +47,6 @@
             border-radius: 6px;
         }
 
-        /* Category List Table */
         table.highlight>tbody>tr:hover {
             background-color: #e3f2fd;
             cursor: pointer;
@@ -57,18 +58,14 @@
             vertical-align: middle;
         }
 
-        /* Badge styles */
         .new.badge.green {
             background-color: #43a047 !important;
-            /* Materialize green */
         }
 
         .new.badge.red {
             background-color: #e53935 !important;
-            /* Materialize red */
         }
 
-        /* Pagination tweaks */
         ul.pagination {
             margin-top: 40px;
         }
@@ -78,7 +75,6 @@
             color: white !important;
         }
 
-        /* Responsive fixes */
         @media (max-width: 992px) {
             main {
                 margin-left: 0;
@@ -91,19 +87,19 @@
                 max-width: 100% !important;
             }
         }
-    </style>
 
+        .attribute-field {
+            margin-bottom: 15px;
+        }
+    </style>
 
     <main>
         <div class="container">
-            <!-- Page Title -->
             <div class="section">
                 <h4 class="blue-text text-darken-2">Manage Categories</h4>
             </div>
 
-            <!-- Row: Form + Table Side by Side -->
             <div class="row">
-                <!-- Add Category Form (Left Side - Narrower) -->
                 <div class="col s12 m4">
                     <div class="card">
                         <div class="card-content">
@@ -122,7 +118,16 @@
                                     <span id="description-error" class="red-text text-darken-2"></span>
                                 </div>
 
-                                <button class="btn waves-effect waves-light blue darken-2" type="submit">
+                                <div id="attributes-container">
+                                    <h6>Attributes</h6>
+                                    <div id="attribute-fields">
+                                        <!-- Dynamic attribute fields will be added here -->
+                                    </div>
+                                    <br><button type="button" class="btn-small blue lighten-1"
+                                        onclick="addAttributeField()">Add Attribute</button>
+                                </div>
+
+                                <br><button class="btn waves-effect waves-light blue darken-2" type="submit">
                                     Create Category
                                     <i class="material-icons right">send</i>
                                 </button>
@@ -131,13 +136,11 @@
                     </div>
                 </div>
 
-                <!-- Category List (Right Side - Wider) -->
                 <div class="col s12 m8">
                     <div class="card">
                         <div class="card-content">
                             <span class="card-title">Category List</span>
 
-                            <!-- Search Form -->
                             <div class="row">
                                 <form action="/admin/category" method="get" class="col s12">
                                     <div class="input-field inline" style="max-width: 400px;">
@@ -147,11 +150,9 @@
                                     <button type="submit" class="btn blue darken-2" id="search-btn">Search</button>
                                     <button class="btn white darken-2" id="search-btn"><a
                                             href="/admin/category">Clear</a></button>
-
                                 </form>
                             </div>
 
-                            <!-- Table -->
                             <div class="responsive-table">
                                 <table class="highlight">
                                     <thead>
@@ -159,10 +160,9 @@
                                             <th>#</th>
                                             <th>Name</th>
                                             <th>Description</th>
+                                            <th>Attributes</th>
                                             <th>Status</th>
                                             <th>Action</th>
-                                            <!-- <th>Edit</th>
-                      <th>Delete</th> -->
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -177,6 +177,14 @@
                                                     </td>
                                                     <td>
                                                         <%= category.description %>
+                                                    </td>
+                                                    <td>
+                                                        <% if (category.attributes && category.attributes.length> 0) {
+                                                            %>
+                                                            <%= category.attributes.map(attr=> attr.name).join(', ') %>
+                                                                <% } else { %>
+                                                                    None
+                                                                    <% } %>
                                                     </td>
                                                     <td>
                                                         <% if(category.isListed) { %>
@@ -195,14 +203,11 @@
                                                                 <a href="/admin/listCategory?id=<%= category._id %>"
                                                                     class="btn green lighten-1 btn-small">List</a>
                                                                 <% } %>
-
                                                                     <a href="/admin/editCategory/<%= category._id %>"
                                                                         class="btn blue lighten-1 btn-small">Edit</a>
-
                                                                     <a href="javascript:void(0);"
                                                                         class="btn orange lighten-1 btn-small"
                                                                         onclick="confirmDelete('<%= category._id %>')">Delete</a>
-
                                                     </td>
                                                 </tr>
                                                 <% }) %>
@@ -220,8 +225,6 @@
                 </div>
             </div>
 
-
-            <!-- Pagination Below the Table -->
             <div class="center-align">
                 <ul class="pagination">
                     <% if (currentPage> 1) { %>
@@ -252,12 +255,9 @@
                                                 <% } %>
                 </ul>
             </div>
-
         </div>
     </main>
 
-
-    <!-- JS Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
@@ -266,17 +266,41 @@
             M.updateTextFields();
         });
 
+        function addAttributeField() {
+            const container = document.getElementById('attribute-fields');
+            const index = container.children.length;
+            const attributeDiv = document.createElement('div');
+            attributeDiv.className = 'attribute-field';
+            attributeDiv.innerHTML = `
+                <div class="input-field">
+                    <input id="attribute_name_${index}" name="attributes[${index}][name]" type="text" required />
+                    <label for="attribute_name_${index}">Attribute Name</label>
+                    <span id="attribute_name_${index}_error" class="red-text text-darken-2"></span>
+                </div>
+                <button type="button" class="btn-small red lighten-1" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            container.appendChild(attributeDiv);
+            M.updateTextFields();
+        }
+
         function handleFormSubmit(event) {
             event.preventDefault();
             if (!validateForm()) return;
 
-            const categoryName = document.getElementsByName("categoryName")[0].value;
-            const description = document.getElementById("descriptionId").value;
+            const categoryName = document.getElementsByName("categoryName")[0].value.trim();
+            const description = document.getElementById("descriptionId").value.trim();
+            const attributes = [];
+            document.querySelectorAll('.attribute-field').forEach((field, index) => {
+                const name = document.getElementById(`attribute_name_${index}`).value.trim();
+                if (name) {
+                    attributes.push({ name });
+                }
+            });
 
             fetch('/admin/addCategory', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ categoryName, description })
+                body: JSON.stringify({ categoryName, description, attributes })
             })
                 .then(response => {
                     if (response.redirected) {
@@ -323,6 +347,14 @@
                 isValid = false;
             }
 
+            document.querySelectorAll('.attribute-field').forEach((field, index) => {
+                const name = document.getElementById(`attribute_name_${index}`).value.trim();
+                if (name && !/^[a-zA-Z\s]+$/.test(name)) {
+                    displayErrorMessage(`attribute_name_${index}_error`, "Only letters and spaces allowed");
+                    isValid = false;
+                }
+            });
+
             return isValid;
         }
 
@@ -339,6 +371,7 @@
                 el.innerText = "";
             });
         }
+
         function confirmDelete(categoryId) {
             Swal.fire({
                 title: "Are you sure?",

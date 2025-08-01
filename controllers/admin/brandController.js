@@ -2,6 +2,9 @@ const Brand = require('../../models/brandSchema');
 const Product = require('../../models/productSchema');
 
 const getBrandPage = async (req, res) => {
+    if (!req.session.admin) {
+        return res.redirect('/admin/login');
+    }
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = 5;
@@ -96,6 +99,9 @@ const deleteBrand = async (req, res) => {
 }
 
 const getEditBrand = async (req, res) => {
+    if (!req.session.admin) {
+        return res.redirect('/admin/login');
+    }
     const brandId = req.query.id;
     const brand = await Brand.findById(brandId);
     if (!brand) {
