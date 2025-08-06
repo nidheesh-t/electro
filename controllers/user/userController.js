@@ -1,4 +1,7 @@
 const User = require("../../models/userSchema");
+const Category = require("../../models/categorySchema");
+const Product = require("../../models/productSchema");
+
 const nodemailer = require("nodemailer");
 const env = require("dotenv").config();
 const bcrypt = require("bcrypt");
@@ -37,29 +40,61 @@ async function sendVerificationEmail(email, otp) {
 }
 
 
-const loadHomepage = async (req, res) => {
-    try {
-        let user;
+// const loadHomepage = async (req, res) => {
+//     try {
+//         let user;
 
-        if (req.session.user) {
-            user = await User.findById({ _id: req.session.user });
-        } else if (req.user) {
-            user = req.user;
-            req.session.user = user._id;
-        }
+//         if (req.session.user) {
+//             user = await User.findById({ _id: req.session.user });
+//         } else if (req.user) {
+//             user = req.user;
+//             req.session.user = user._id;
+//         }
+
+//         if (user) {
+//             return res.render("home", { user });
+//         } else {
+//             return res.render("home")
+//         }
+
+//     } catch (error) {
+//         console.error("Error loading homepage", error);
+//         res.status(500).send("Internal server error");
+//     }
+// }
+
+const loadHomePage = async (req, res) => {
+    try {
+        const user = req.session.user;
+        const categories = await Category.find({ isDeleted: false, isListed: true });
+
+        let productData = await Product.find({
+            isDeleted: false,
+            isListed: true,
+            category: { $in: categories.map(category => category._id) },
+            totalQuantity: { $gt: 0 }
+        });
+
+        productData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        productData = productData.slice(0, 4);
 
         if (user) {
-            return res.render("home", { user });
+            const userData = await User.findById(user);
+            if (userData.isBlock) {
+                req.session.user = null;
+                return res.redirect('/login');
+            } else {
+                res.render('home', { user: userData, products: productData });
+            }
         } else {
-            return res.render("home")
+            return res.render('home', { products: productData });
         }
 
     } catch (error) {
-        console.error("Error loading homepage", error);
-        res.status(500).send("Internal server error");
+        console.error('Error loading home page:', error);
+        res.status(500).send('Internal Server Error');
     }
 }
-
 
 const pageNotFound = async (req, res) => {
     try {
@@ -249,7 +284,7 @@ const logout = async (req, res) => {
 
 
 module.exports = {
-    loadHomepage,
+    loadHomePage,
     pageNotFound,
     loadSignup,
     loadLogin,

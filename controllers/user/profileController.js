@@ -189,7 +189,7 @@ const postNewPassword = async (req, res) => {
         req.session.userOtp = null;
         req.session.userData = null;
 
-        res.render('forgot-password', { message: "Password reset successfully"});
+        res.render('forgot-password', { message: "Password reset successfully" });
 
     } catch (error) {
         console.error("Error resetting password:", error);
@@ -200,6 +200,24 @@ const postNewPassword = async (req, res) => {
     }
 }
 
+const userProfile = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        const userData = await User.findById(userId);
+        // const addressData = await Address.findOne({ userId: userId });
+        if (!userData) {
+            return res.status(404).send("User not found");
+        }
+        res.render("profile", { user: userData }); // userAddress: addressData
+    } catch (error) {
+        console.error("Error loading user profile:", error);
+        res.redirect("/pageNotFound");
+    }
+};
+
+
+
+
 module.exports = {
     getForgotPassPage,
     forgotEmailValid,
@@ -207,5 +225,6 @@ module.exports = {
     ensureValidSession,
     getResetPassPage,
     resendOtp,
-    postNewPassword
+    postNewPassword,
+    userProfile
 }

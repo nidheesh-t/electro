@@ -6,7 +6,7 @@ const passport = require("../config/passport");
 const User = require("../models/userSchema");
 
 router.get("/pageNotFound", userController.pageNotFound);
-router.get("/", userController.loadHomepage);
+router.get("/", userController.loadHomePage);
 router.get("/signup", userController.loadSignup);
 router.post("/signup", userController.signup);
 router.get("/login", userController.loadLogin);
@@ -47,5 +47,6 @@ router.post('/verify-passForgot-otp', profileController.verifyForgotPassOtp);
 router.get('/reset-password', profileController.ensureValidSession, profileController.getResetPassPage);
 router.post('/resend-forgot-otp', profileController.resendOtp)
 router.post('/reset-password', profileController.postNewPassword)
+router.get('/userProfile', profileController.userProfile)
 
 module.exports = router;
