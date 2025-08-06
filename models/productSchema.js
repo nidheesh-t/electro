@@ -4,18 +4,14 @@ const { Schema } = mongoose;
 const productSchema = new Schema({
     productName: {
         type: String,
-        required: true
+        required: true,
+        trim: true,
+        lowercase: true
     },
     description: {
         type: String,
         required: true
     },
-    variants: [{
-        color: String,
-        storage: String,
-        ram: String,
-        screen: String
-    }],
     brand: {
         type: Schema.Types.ObjectId,
         ref: "Brand",
@@ -28,26 +24,39 @@ const productSchema = new Schema({
     },
     regularPrice: {
         type: Number,
-        required: true
+        required: true,
+        min: [0, "Regular price must be positive"]
     },
     salePrice: {
         type: Number,
         required: true,
+        min: [0, "Sale price must be positive"],
         validate: {
             validator: function (value) {
                 return value <= this.regularPrice;
             },
-            message: 'Sale price must be less than or equal to regular price'
+            message: "Sale price must be less than or equal to regular price"
         }
     },
     productOffer: {
         type: Number,
         default: 0
     },
-    quantity: {
+    variants: [{
+        specs: [{
+            name: String,
+            value: String
+        }],
+        quantity: {
+            type: Number,
+            required: true,
+            min: [0, "Quantity cannot be negative"]
+        }
+    }],
+    totalQuantity: {
         type: Number,
-        required: true,
-        default: 0
+        default: 0,
+        min: [0, "Total quantity cannot be negative"]
     },
     productImage: {
         type: [String],
@@ -57,13 +66,23 @@ const productSchema = new Schema({
         type: Boolean,
         default: true
     },
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
     status: {
         type: String,
-        enum: ["Available", "Out of stock", "Discontinued"],
+        enum: ["Available", "Out of Stock", "Discontinued"],
         default: "Available"
     }
 }, { timestamps: true });
 
+// Pre-save hook to calculate totalQuantity from variants
+productSchema.pre('save', function (next) {
+    this.totalQuantity = this.variants.reduce((sum, variant) => sum + (variant.quantity || 0), 0);
+    this.status = this.totalQuantity <= 0 ? "Out of Stock" : "Available";
+    next();
+});
+
 const Product = mongoose.model("Product", productSchema);
 module.exports = Product;
-

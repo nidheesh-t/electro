@@ -37,7 +37,7 @@ const categoryInfo = async (req, res) => {
 }
 
 const addCategory = async (req, res) => {
-    const { categoryName, description, attributes } = req.body;
+    const { categoryName, description } = req.body;
     try {
         const existingCategory = await Category.findOne({ categoryName });
 
@@ -45,26 +45,10 @@ const addCategory = async (req, res) => {
             return res.status(400).json({ error: "Category already exists" });
         }
 
-        // Validate unique attribute names
-        const attributeNames = new Set();
-        if (attributes) {
-            for (const attr of attributes) {
-                if (!attr.name) {
-                    return res.status(400).json({ error: "Attribute name is required" });
-                }
-                const nameLower = attr.name.toLowerCase();
-                if (attributeNames.has(nameLower)) {
-                    return res.status(400).json({ error: `Duplicate attribute name: ${attr.name}` });
-                }
-                attributeNames.add(nameLower);
-            }
-        }
-
         const newCategory = new Category({
             categoryName: categoryName.trim(),
             description: description.trim(),
-            isListed: true,
-            attributes: attributes || []
+            isListed: true
         });
 
         await newCategory.save();
@@ -114,37 +98,19 @@ const getEditCategory = async (req, res) => {
 
 const editCategory = async (req, res) => {
     try {
-        const { categoryName, description, attributes } = req.body;
+        const { categoryName, description } = req.body;
         const id = req.params.id;
 
-        // Check for duplicate category name
         const existing = await Category.findOne({ categoryName, _id: { $ne: id } });
         if (existing) {
             return res.status(400).json({ error: "Category name already exists" });
         }
 
-        // Validate unique attribute names
-        const attributeNames = new Set();
-        if (attributes) {
-            for (const attr of attributes) {
-                if (!attr.name) {
-                    return res.status(400).json({ error: "Attribute name is required" });
-                }
-                const nameLower = attr.name.toLowerCase();
-                if (attributeNames.has(nameLower)) {
-                    return res.status(400).json({ error: `Duplicate attribute name: ${attr.name}` });
-                }
-                attributeNames.add(nameLower);
-            }
-        }
-
-        // Update category, overwriting attributes array
         const updateCategory = await Category.findByIdAndUpdate(
             id,
             {
                 categoryName: categoryName.trim(),
-                description: description.trim(),
-                attributes: attributes || []
+                description: description.trim()
             },
             { new: true, runValidators: true }
         );
@@ -171,19 +137,6 @@ const softDeleteCategory = async (req, res) => {
     }
 }
 
-const getCategoryAttributes = async (req, res) => {
-    try {
-        const category = await Category.findById(req.params.id, 'attributes');
-        if (!category) {
-            return res.status(404).json({ error: "Category not found" });
-        }
-        res.json({ attributes: category.attributes || [] });
-    } catch (error) {
-        console.error('Error fetching category attributes:', error);
-        res.status(500).json({ error: "Internal server error" });
-    }
-}
-
 module.exports = {
     categoryInfo,
     addCategory,
@@ -191,6 +144,5 @@ module.exports = {
     getUnlistCategory,
     getEditCategory,
     editCategory,
-    softDeleteCategory,
-    getCategoryAttributes
+    softDeleteCategory
 }

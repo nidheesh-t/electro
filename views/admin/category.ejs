@@ -93,6 +93,7 @@
         }
     </style>
 
+
     <main>
         <div class="container">
             <div class="section">
@@ -116,15 +117,6 @@
                                         required></textarea>
                                     <label for="descriptionId">Description</label>
                                     <span id="description-error" class="red-text text-darken-2"></span>
-                                </div>
-
-                                <div id="attributes-container">
-                                    <h6>Attributes</h6>
-                                    <div id="attribute-fields">
-                                        <!-- Dynamic attribute fields will be added here -->
-                                    </div>
-                                    <br><button type="button" class="btn-small blue lighten-1"
-                                        onclick="addAttributeField()">Add Attribute</button>
                                 </div>
 
                                 <br><button class="btn waves-effect waves-light blue darken-2" type="submit">
@@ -160,7 +152,6 @@
                                             <th>#</th>
                                             <th>Name</th>
                                             <th>Description</th>
-                                            <th>Attributes</th>
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
@@ -177,14 +168,6 @@
                                                     </td>
                                                     <td>
                                                         <%= category.description %>
-                                                    </td>
-                                                    <td>
-                                                        <% if (category.attributes && category.attributes.length> 0) {
-                                                            %>
-                                                            <%= category.attributes.map(attr=> attr.name).join(', ') %>
-                                                                <% } else { %>
-                                                                    None
-                                                                    <% } %>
                                                     </td>
                                                     <td>
                                                         <% if(category.isListed) { %>
@@ -213,7 +196,7 @@
                                                 <% }) %>
                                                     <% } else { %>
                                                         <tr>
-                                                            <td colspan="6" class="center-align">No categories found
+                                                            <td colspan="5" class="center-align">No categories found
                                                             </td>
                                                         </tr>
                                                         <% } %>
@@ -223,39 +206,38 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="center-align">
-                <ul class="pagination">
-                    <% if (currentPage> 1) { %>
-                        <li class="waves-effect">
-                            <a href="?page=<%= currentPage - 1 %>&search=<%= search || '' %>"><i
-                                    class="material-icons">chevron_left</i></a>
-                        </li>
-                        <% } else { %>
-                            <li class="disabled"><a><i class="material-icons">chevron_left</i></a></li>
-                            <% } %>
+                <div class="center-align">
+                    <ul class="pagination">
+                        <% if (currentPage> 1) { %>
+                            <li class="waves-effect">
+                                <a href="?page=<%= currentPage - 1 %>&search=<%= search || '' %>"><i
+                                        class="material-icons">chevron_left</i></a>
+                            </li>
+                            <% } else { %>
+                                <li class="disabled"><a><i class="material-icons">chevron_left</i></a></li>
+                                <% } %>
 
-                                <% for (let i=1; i <=totalPages; i++) { %>
-                                    <li class="<%= i === currentPage ? 'active blue' : 'waves-effect' %>">
-                                        <a href="?page=<%= i %>&search=<%= search || '' %>">
-                                            <%= i %>
-                                        </a>
-                                    </li>
-                                    <% } %>
+                                    <% for (let i=1; i <=totalPages; i++) { %>
+                                        <li class="<%= i === currentPage ? 'active blue' : 'waves-effect' %>">
+                                            <a href="?page=<%= i %>&search=<%= search || '' %>">
+                                                <%= i %>
+                                            </a>
+                                        </li>
+                                        <% } %>
 
-                                        <% if (currentPage < totalPages) { %>
-                                            <li class="waves-effect">
-                                                <a href="?page=<%= currentPage + 1 %>&search=<%= search || '' %>"><i
-                                                        class="material-icons">chevron_right</i></a>
-                                            </li>
-                                            <% } else { %>
-                                                <li class="disabled"><a><i class="material-icons">chevron_right</i></a>
+                                            <% if (currentPage < totalPages) { %>
+                                                <li class="waves-effect">
+                                                    <a href="?page=<%= currentPage + 1 %>&search=<%= search || '' %>"><i
+                                                            class="material-icons">chevron_right</i></a>
                                                 </li>
-                                                <% } %>
-                </ul>
+                                                <% } else { %>
+                                                    <li class="disabled"><a><i
+                                                                class="material-icons">chevron_right</i></a></li>
+                                                    <% } %>
+                    </ul>
+                </div>
             </div>
-        </div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
@@ -266,41 +248,17 @@
             M.updateTextFields();
         });
 
-        function addAttributeField() {
-            const container = document.getElementById('attribute-fields');
-            const index = container.children.length;
-            const attributeDiv = document.createElement('div');
-            attributeDiv.className = 'attribute-field';
-            attributeDiv.innerHTML = `
-                <div class="input-field">
-                    <input id="attribute_name_${index}" name="attributes[${index}][name]" type="text" required />
-                    <label for="attribute_name_${index}">Attribute Name</label>
-                    <span id="attribute_name_${index}_error" class="red-text text-darken-2"></span>
-                </div>
-                <button type="button" class="btn-small red lighten-1" onclick="this.parentElement.remove()">Remove</button>
-            `;
-            container.appendChild(attributeDiv);
-            M.updateTextFields();
-        }
-
         function handleFormSubmit(event) {
             event.preventDefault();
             if (!validateForm()) return;
 
             const categoryName = document.getElementsByName("categoryName")[0].value.trim();
             const description = document.getElementById("descriptionId").value.trim();
-            const attributes = [];
-            document.querySelectorAll('.attribute-field').forEach((field, index) => {
-                const name = document.getElementById(`attribute_name_${index}`).value.trim();
-                if (name) {
-                    attributes.push({ name });
-                }
-            });
 
             fetch('/admin/addCategory', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ categoryName, description, attributes })
+                body: JSON.stringify({ categoryName, description })
             })
                 .then(response => {
                     if (response.redirected) {
@@ -346,14 +304,6 @@
                 displayErrorMessage("description-error", "Please enter a description");
                 isValid = false;
             }
-
-            document.querySelectorAll('.attribute-field').forEach((field, index) => {
-                const name = document.getElementById(`attribute_name_${index}`).value.trim();
-                if (name && !/^[a-zA-Z\s]+$/.test(name)) {
-                    displayErrorMessage(`attribute_name_${index}_error`, "Only letters and spaces allowed");
-                    isValid = false;
-                }
-            });
 
             return isValid;
         }

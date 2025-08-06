@@ -1,3 +1,4 @@
+// categorySchema.js
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
@@ -24,14 +25,7 @@ const categorySchema = new Schema({
     isDeleted: {
         type: Boolean,
         default: false
-    },
-    attributes: [{
-        name: {
-            type: String,
-            required: true,
-            trim: true
-        }
-    }]
+    }
 }, { timestamps: true });
 
 const Category = mongoose.model("Category", categorySchema);
