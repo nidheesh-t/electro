@@ -213,8 +213,143 @@ const userProfile = async (req, res) => {
         console.error("Error loading user profile:", error);
         res.redirect("/pageNotFound");
     }
-};
+}
 
+const changeEmail = async (req, res) => {
+    try {
+        res.render("change-email");
+    } catch (error) {
+        console.error("Error loading change email page:", error);
+        res.redirect("/pageNotFound");
+    }
+}
+
+const changeEmailValid = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const userExists = await User.findOne({ email });
+        if (userExists) {
+            const otp = generateOTP();
+
+            const emailSent = await sendVerificationEmail(email, otp);
+            if (emailSent) {
+                req.session.userOtp = otp;
+                req.session.userData = req.body;
+                req.session.email = email;
+
+                res.render("change-email-otp");
+                console.log("Generated OTP:", otp);
+            } else {
+                res.json("email-error")
+            }
+        } else {
+            res.render("change-email", { message: "Email not registered" });
+        }
+    } catch (error) {
+        console.error("Error in changeEmailValid:", error);
+        res.redirect("/pageNotFound");
+    }
+}
+
+
+const verifyEmailOtp = async (req, res) => {
+    try {
+        const { otp } = req.body;
+        console.log(otp);
+        if (otp === req.session.userOtp) {
+            res.json({ success: true, redirectUrl: '/new-email' });
+        } else {
+            console.log("Invalid OTP entered");
+            res.json({ success: false, message: "Invalid OTP, Please try again" });
+        }
+    } catch (error) {
+        console.error("Error verify otp", error);
+        res.status(500).send("Internal server error")
+
+    }
+
+}
+
+const getNewEmailPage = async (req, res) => {
+    try {
+        res.render('new-email')
+    } catch (error) {
+        console.log("new email page not found")
+        res.render('/pageNotFound')
+    }
+
+}
+
+const updateEmail = async (req, res) => {
+    try {
+        const newEmail = req.body.newEmail;
+        const userId = req.session.user;
+
+        await User.findByIdAndUpdate(userId, { email: newEmail });
+        res.redirect("/userProfile");
+    } catch (error) {
+        console.error("Error updating email:", error);
+        res.redirect("/pageNotFound");
+    }
+}
+
+const resendChangeEmailOtp = async (req, res) => {
+  try {
+    const email = req.session.email;
+    if (!email) return res.json({ success: false, message: "Email not found in session" });
+
+    const otp = generateOTP();
+    const emailSent = await sendVerificationEmail(email, otp);
+    console.log("Regenerated otp: ",otp);
+
+    if (emailSent) {
+      req.session.userOtp = otp;
+      res.json({ success: true });
+    } else {
+      res.json({ success: false, message: "Failed to send OTP" });
+    }
+  } catch (error) {
+    console.error("Error in resendChangePassOtp:", error);
+    res.json({ success: false, message: "Server error" });
+  }
+}
+
+const changePassword = async (req, res) => {
+    try {
+      res.render("change-password");
+    } catch (error) {
+      console.error("Error loading change password page:", error);
+      res.redirect("/pageNotFound");
+    }
+  }
+
+const changePasswordValid = async (req, res) => {
+    try {
+      const { email } = req.body;
+      console.log(email);
+      
+      const userExists = await User.findOne({ email });
+      if (userExists) {
+        const otp = generateOTP();
+        const emailSent = await sendVerificationEmail(email, otp);
+        if (emailSent) {
+          req.session.userOtp = otp;
+          req.session.userData = req.body;
+          req.session.email = email;
+
+          res.render("change-password-otp");
+          console.log("Generated OTP:", otp);
+        } else {
+          res.json("email-error");
+        }
+      } else {
+        res.render("change-password", { message: "Email not registered" });
+      }
+    } catch (error) {
+      console.error("Error in changePasswordValid:", error);
+      res.redirect("/pageNotFound");
+    }
+  }
 
 
 
@@ -226,5 +361,13 @@ module.exports = {
     getResetPassPage,
     resendOtp,
     postNewPassword,
-    userProfile
+    userProfile,
+    changeEmail,
+    changeEmailValid,
+    verifyEmailOtp,
+    getNewEmailPage,
+    updateEmail,
+    resendChangeEmailOtp, 
+    changePassword,
+    changePasswordValid
 }

@@ -49,4 +49,14 @@ router.post('/resend-forgot-otp', profileController.resendOtp)
 router.post('/reset-password', profileController.postNewPassword)
 router.get('/userProfile', profileController.userProfile)
 
+router.get('/change-email', profileController.changeEmail)
+router.post('/change-email', profileController.changeEmailValid)
+router.post('/verify-email-otp', profileController.verifyEmailOtp)
+router.get('/new-email', profileController.getNewEmailPage)
+router.post("/update-email", profileController.updateEmail);
+router.post('/resend-email-otp', profileController.resendChangeEmailOtp)
+router.get('/change-password', profileController.changePassword)
+router.post('/change-password', profileController.changePasswordValid)
+
+
 module.exports = router;
