@@ -1,0 +1,926 @@
+<%- include("../../views/partials/user/header") %>
+
+  <style>
+    :root {
+      --primary-color: #1e918b;
+      --primary-hover: #15736e;
+      --secondary-color: #46698f;
+      --secondary-hover: #3a5a7a;
+      --light-gray: #f8f9fa;
+      --medium-gray: #e9ecef;
+      --dark-gray: #495057;
+      --text-color: #212529;
+      --error-color: #dc3545;
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+      --border-radius: 10px;
+      /* Increased slightly for larger text */
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --base-font-size: 1.5rem;
+      /* Minimum font size */
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family);
+      font-size: var(--base-font-size);
+    }
+
+    .main-container {
+      max-width: 1280px;
+      margin: 3rem auto;
+      /* Increased margin for balance */
+      padding: 0 2rem;
+      /* Increased padding */
+    }
+
+    .shop-page {
+      margin-top: 2.5rem;
+    }
+
+    /* Top Bar */
+    .shop-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+      /* Increased gap */
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .search-form {
+      flex: 1;
+      max-width: 500px;
+      /* Increased width for larger text */
+      display: flex;
+      align-items: center;
+      background-color: white;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--medium-gray);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .search-form:focus-within {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 4px rgba(30, 145, 139, 0.15);
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 1.25rem 1.75rem;
+      /* Increased padding */
+      font-size: 1.6rem;
+      /* Increased from 1.2rem */
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text-color);
+    }
+
+    .search-button {
+      padding: 1.25rem 2rem;
+      /* Increased padding */
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+      cursor: pointer;
+      font-size: 1.5rem;
+      /* Set to minimum */
+      font-weight: 500;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      /* Increased gap */
+    }
+
+    .search-button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .search-button i {
+      font-size: 1.6rem;
+      /* Increased */
+    }
+
+    .sort-controls {
+      display: flex;
+      align-items: center;
+      background: white;
+      padding: 0.75rem;
+      /* Increased padding */
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--medium-gray);
+    }
+
+    .sort-controls label {
+      font-weight: 500;
+      color: var(--text-color);
+      padding: 0 1rem;
+      font-size: 1.5rem;
+      /* Set to minimum */
+    }
+
+    .sort-controls select {
+      padding: 0.75rem;
+      /* Increased padding */
+      border: none;
+      border-radius: 4px;
+      background: white;
+      min-width: 200px;
+      /* Increased width */
+      cursor: pointer;
+      font-size: 1.5rem;
+      /* Set to minimum */
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .sort-controls select:focus {
+      box-shadow: 0 0 0 3px rgba(30, 145, 139, 0.15);
+    }
+
+    /* Filter Tags */
+    .filter-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      /* Increased gap */
+      margin-bottom: 2rem;
+    }
+
+    .filter-tag {
+      background-color: var(--light-gray);
+      padding: 0.75rem 1.25rem;
+      /* Increased padding */
+      border-radius: 24px;
+      /* Adjusted for larger text */
+      font-size: 1.5rem;
+      /* Set to minimum */
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--text-color);
+    }
+
+    .filter-tag a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: bold;
+      background: rgba(30, 145, 139, 0.1);
+      width: 26px;
+      /* Increased size */
+      height: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: var(--transition);
+      font-size: 1.5rem;
+      /* Set to minimum */
+    }
+
+    .filter-tag a:hover {
+      background: rgba(30, 145, 139, 0.2);
+    }
+
+    .clear-filters {
+      background-color: transparent;
+      color: var(--primary-color);
+      padding: 1rem 1.5rem;
+      /* Increased padding */
+      border: 1px solid var(--primary-color);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 1.5rem;
+      /* Set to minimum */
+      transition: var(--transition);
+    }
+
+    .clear-filters:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    /* Product List Container */
+    .product-list-container {
+      display: flex;
+      gap: 2.5rem;
+      /* Increased gap */
+      margin-bottom: 3.5rem;
+    }
+
+    .sidebar {
+      width: 300px;
+      /* Increased width */
+      padding: 2rem;
+      /* Increased padding */
+      background: white;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--medium-gray);
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 2rem;
+      align-self: flex-start;
+    }
+
+    .filter-section {
+      margin-bottom: 2.5rem;
+    }
+
+    .filter-title {
+      font-size: 1.8rem;
+      /* Increased from 1.25rem */
+      font-weight: 600;
+      color: var(--text-color);
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--primary-color);
+    }
+
+    .filter-section ul {
+      list-style: none;
+    }
+
+    .filter-item {
+      padding: 0.75rem 0;
+      /* Increased padding */
+      transition: var(--transition);
+    }
+
+    .filter-item a {
+      display: block;
+      padding: 0.75rem 1rem;
+      color: var(--text-color);
+      text-decoration: none;
+      font-size: 1.5rem;
+      /* Set to minimum */
+      border-radius: 4px;
+      transition: var(--transition);
+    }
+
+    .filter-item a:hover {
+      color: var(--primary-color);
+      background-color: var(--light-gray);
+      padding-left: 1.25rem;
+    }
+
+    .filter-item a.active {
+      color: var(--primary-color);
+      font-weight: 600;
+      background-color: rgba(30, 145, 139, 0.1);
+      padding-left: 1.25rem;
+    }
+
+    .price-filter {
+      padding: 1.25rem 0;
+    }
+
+    .price-range-inputs {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      /* Increased gap */
+      margin-bottom: 1.25rem;
+    }
+
+    .price-range-inputs input {
+      flex: 1;
+      padding: 0.75rem;
+      /* Increased padding */
+      border: 1px solid var(--medium-gray);
+      border-radius: 4px;
+      font-size: 1.5rem;
+      /* Set to minimum */
+      max-width: 120px;
+      /* Increased width */
+      transition: var(--transition);
+    }
+
+    .price-range-inputs input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(30, 145, 139, 0.15);
+    }
+
+    .price-range-inputs span {
+      font-size: 1.5rem;
+      /* Set to minimum */
+    }
+
+    .apply-button {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 1rem;
+      /* Increased padding */
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      width: 100%;
+      font-weight: 500;
+      font-size: 1.5rem;
+      /* Set to minimum */
+      transition: var(--transition);
+    }
+
+    .apply-button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    /* Product Grid */
+    .product-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      /* Increased min width */
+      gap: 2rem;
+      /* Increased gap */
+    }
+
+    .product-card {
+      background: white;
+      border: 1px solid var(--medium-gray);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      /* Increased padding */
+      text-align: center;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      height: 450px;
+      /* Increased height */
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .product-card img {
+      width: 100%;
+      height: 200px;
+      /* Increased height */
+      object-fit: contain;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      background: var(--light-gray);
+      padding: 0.75rem;
+    }
+
+    .product-card h4 {
+      font-size: 1.8rem;
+      /* Increased from 1.25rem */
+      font-weight: 600;
+      color: var(--text-color);
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex-grow: 1;
+    }
+
+    .product-card .brand {
+      font-size: 1.5rem;
+      /* Set to minimum */
+      color: var(--dark-gray);
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .price {
+      font-size: 1.8rem;
+      /* Increased from 1.25rem */
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 0.75rem;
+    }
+
+    .original-price {
+      font-size: 1.5rem;
+      /* Set to minimum */
+      color: var(--dark-gray);
+      text-decoration: line-through;
+      margin-left: 0.75rem;
+    }
+
+    .wishlist-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: white;
+      color: #ccc;
+      width: 40px;
+      /* Increased size */
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      font-size: 1.8rem;
+      /* Increased */
+    }
+
+    .wishlist-btn:hover {
+      color: #ff6b6b;
+      transform: scale(1.1);
+    }
+
+    .wishlist-btn.active {
+      color: #ff6b6b;
+    }
+
+    .add-to-cart-btn {
+      background-color: var(--secondary-color);
+      color: white;
+      padding: 1rem;
+      /* Increased padding */
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      width: 100%;
+      font-weight: 500;
+      font-size: 1.5rem;
+      /* Set to minimum */
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+    }
+
+    .add-to-cart-btn:hover {
+      background-color: var(--secondary-hover);
+    }
+
+    .add-to-cart-btn i {
+      font-size: 1.6rem;
+      /* Increased */
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      /* Increased gap */
+      margin: 3.5rem 0;
+    }
+
+    .pagination a {
+      padding: 1rem 1.5rem;
+      /* Increased padding */
+      background: white;
+      border: 1px solid var(--medium-gray);
+      color: var(--text-color);
+      text-decoration: none;
+      border-radius: var(--border-radius);
+      font-size: 1.5rem;
+      /* Set to minimum */
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .pagination a:hover {
+      background-color: var(--light-gray);
+    }
+
+    .pagination .active {
+      background-color: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    /* No Products */
+    .no-products {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 3.5rem;
+      /* Increased padding */
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .no-products h3 {
+      color: var(--text-color);
+      font-size: 2rem;
+      /* Increased from 1.5rem */
+      margin-bottom: 1.25rem;
+    }
+
+    .no-products p {
+      color: var(--dark-gray);
+      font-size: 1.5rem;
+      /* Set to minimum */
+      margin-bottom: 2rem;
+    }
+
+    .no-products button.price-button {
+      background-color: transparent;
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+      padding: 1rem 2rem;
+      /* Increased padding */
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 1.5rem;
+      /* Set to minimum */
+      transition: var(--transition);
+    }
+
+    .no-products button.price-button:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    /* Search Feedback */
+    .search-feedback {
+      grid-column: 1 / -1;
+      padding: 1.25rem 0;
+      font-size: 1.5rem;
+      /* Set to minimum */
+      color: var(--text-color);
+      font-weight: 500;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+      .product-list-container {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        position: static;
+      }
+
+      .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        /* Adjusted min width */
+      }
+    }
+
+    @media (max-width: 576px) {
+      .shop-topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-form {
+        max-width: 100%;
+      }
+
+      .price-range-inputs {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .price-range-inputs input {
+        max-width: 100%;
+      }
+
+      :root {
+        --base-font-size: 1.3rem;
+        /* Slightly smaller for mobile */
+      }
+
+      .product-card {
+        height: 420px;
+        /* Adjusted for mobile */
+      }
+
+      .product-card img {
+        height: 180px;
+        /* Adjusted for mobile */
+      }
+    }
+  </style>
+
+  <div class="main-container">
+    <section class="shop-page">
+      <div class="shop-topbar">
+        <form action="/filter" method="get" class="search-form">
+          <input type="text" name="search" placeholder="Search products..." class="search-input"
+            value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>" aria-label="Search products" />
+          <button type="submit" class="search-button" aria-label="Search">
+            <i class="fas fa-search"></i> Search
+          </button>
+        </form>
+
+        <div class="sort-controls">
+          <label for="sort">Sort by:</label>
+          <form id="sortForm" method="get" action="/filter">
+            <input type="hidden" name="search" value="<%= searchQuery || '' %>">
+            <input type="hidden" name="category" value="<%= selectedCategory || '' %>">
+            <input type="hidden" name="brand" value="<%= selectedBrand || '' %>">
+            <input type="hidden" name="minPrice" value="<%= selectedMinPrice || '' %>">
+            <input type="hidden" name="maxPrice" value="<%= selectedMaxPrice || '' %>">
+            <select name="sort" id="sort" onchange="this.form.submit()" aria-label="Sort products">
+              <option value="newest" <%=selectedSort==='newest' ? 'selected' : '' %>>Newest</option>
+              <option value="price-asc" <%=selectedSort==='price-asc' ? 'selected' : '' %>>Price: Low to High</option>
+              <option value="price-desc" <%=selectedSort==='price-desc' ? 'selected' : '' %>>Price: High to Low</option>
+              <option value="name-asc" <%=selectedSort==='name-asc' ? 'selected' : '' %>>Name: A-Z</option>
+              <option value="name-desc" <%=selectedSort==='name-desc' ? 'selected' : '' %>>Name: Z-A</option>
+            </select>
+          </form>
+        </div>
+      </div>
+
+      <% if (selectedCategory || selectedBrand || selectedMinPrice || selectedMaxPrice || searchQuery) { %>
+        <div class="filter-tags">
+          <% if (searchQuery) { %>
+            <div class="filter-tag">
+              Search: <%= searchQuery %>
+                <a href="/filter?<%= buildQueryString({ search: null }) %>" aria-label="Remove search filter">×</a>
+            </div>
+            <% } %>
+              <% if (selectedCategory) { %>
+                <div class="filter-tag">
+                  Category: <%= category.find(c=> c._id.toString() === selectedCategory)?.categoryName || 'Unknown' %>
+                    <a href="/filter?<%= buildQueryString({ category: null }) %>"
+                      aria-label="Remove category filter">×</a>
+                </div>
+                <% } %>
+                  <% if (selectedBrand) { %>
+                    <div class="filter-tag">
+                      Brand: <%= brand.find(b=> b._id.toString() === selectedBrand)?.brandName || 'Unknown' %>
+                        <a href="/filter?<%= buildQueryString({ brand: null }) %>"
+                          aria-label="Remove brand filter">×</a>
+                    </div>
+                    <% } %>
+                      <% if (selectedMinPrice || selectedMaxPrice) { %>
+                        <div class="filter-tag">
+                          Price:
+                          <%= selectedMinPrice ? `₹${selectedMinPrice}` : '' %>
+                            <%= selectedMinPrice && selectedMaxPrice ? ' - ' : '' %>
+                              <%= selectedMaxPrice ? `₹${selectedMaxPrice}` : '' %>
+                                <a href="/filter?<%= buildQueryString({ minPrice: null, maxPrice: null }) %>"
+                                  aria-label="Remove price filter">×</a>
+                        </div>
+                        <% } %>
+                          <button class="clear-filters" onclick="window.location.href='/filter'"
+                            aria-label="Clear all filters">
+                            <i class="fas fa-times"></i> Clear All Filters
+                          </button>
+        </div>
+        <% } %>
+
+          <div class="product-list-container">
+            <aside class="sidebar">
+              <div class="filter-section">
+                <div class="filter-title">Categories</div>
+                <ul>
+                  <% if (category && category.length> 0) { %>
+                    <% category.forEach((cat)=> { %>
+                      <li class="filter-item">
+                        <a href="/filter?<%= buildQueryString({ category: cat._id, page: null }) %>"
+                          class="<%= selectedCategory === cat._id.toString() ? 'active' : '' %>"
+                          aria-label="Filter by <%= cat.categoryName %>">
+                          <%= cat.categoryName %>
+                        </a>
+                      </li>
+                      <% }); %>
+                        <% } else { %>
+                          <li class="filter-item">No categories found</li>
+                          <% } %>
+                </ul>
+              </div>
+
+              <div class="filter-section">
+                <div class="filter-title">Brands</div>
+                <ul>
+                  <% if (brand && brand.length> 0) { %>
+                    <% brand.forEach((br)=> { %>
+                      <li class="filter-item">
+                        <a href="/filter?<%= buildQueryString({ brand: br._id, page: null }) %>"
+                          class="<%= selectedBrand === br._id.toString() ? 'active' : '' %>"
+                          aria-label="Filter by <%= br.brandName %>">
+                          <%= br.brandName %>
+                        </a>
+                      </li>
+                      <% }); %>
+                        <% } else { %>
+                          <li class="filter-item">No brands found</li>
+                          <% } %>
+                </ul>
+              </div>
+
+              <div class="price-filter">
+                <div class="filter-title">Price Range</div>
+                <form id="priceFilterForm" method="get" action="/filter">
+                  <input type="hidden" name="search" value="<%= searchQuery || '' %>">
+                  <input type="hidden" name="category" value="<%= selectedCategory || '' %>">
+                  <input type="hidden" name="brand" value="<%= selectedBrand || '' %>">
+                  <input type="hidden" name="sort" value="<%= selectedSort || '' %>">
+                  <div class="price-range-inputs">
+                    <input type="number" name="minPrice" placeholder="Min" value="<%= selectedMinPrice || '' %>"
+                      aria-label="Minimum price">
+                    <span>to</span>
+                    <input type="number" name="maxPrice" placeholder="Max" value="<%= selectedMaxPrice || '' %>"
+                      aria-label="Maximum price">
+                  </div>
+                  <button type="submit" class="apply-button">Apply Price Filter</button>
+                </form>
+              </div>
+            </aside>
+
+            <main class="product-grid">
+              <% if (typeof searchQuery !=='undefined' && searchQuery) { %>
+                <div class="search-feedback">
+                  Showing results for "<%= searchQuery %>" (<%= count || products.length %> found)
+                </div>
+                <% } %>
+
+                  <% if (products && products.length> 0) { %>
+                    <% products.forEach((product)=> { %>
+                      <div class="product-card">
+                        <button class="wishlist-btn" onclick="toggleWishlist('<%= product._id %>')"
+                          aria-label="Toggle wishlist for <%= product.productName %>">
+                          <i class="fas fa-heart"></i>
+                        </button>
+                        <a href="/productDetails/<%= product._id %>"
+                          aria-label="View <%= product.productName %> details">
+                          <img loading="lazy"
+                            src="/uploads/re-image/<%= product.productImage?.[0] || '/images/default-placeholder.jpg' %>"
+                            alt="<%= product.productName %>" />
+                          <h4>
+                            <%= product.productName %>
+                          </h4>
+                          <p class="brand">Brand: <%= product.brand?.brandName || 'Unknown' %>
+                          </p>
+                          <div class="price">
+                            ₹<%= product.salePrice.toLocaleString('en-IN') %>
+                              <% if (product.regularPrice> product.salePrice) { %>
+                                <span class="original-price">₹<%= product.regularPrice.toLocaleString('en-IN') %></span>
+                                <% } %>
+                          </div>
+                        </a>
+                        <button class="add-to-cart-btn" onclick="addToCart('<%= product._id %>')"
+                          aria-label="Add <%= product.productName %> to cart">
+                          <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                      </div>
+                      <% }); %>
+                        <% } else { %>
+                          <div class="no-products">
+                            <h3>No products found</h3>
+                            <% if (typeof searchQuery !=='undefined' && searchQuery) { %>
+                              <p>No results found for "<%= searchQuery %>"</p>
+                              <% } else { %>
+                                <p>Try adjusting your search or filter criteria</p>
+                                <% } %>
+                                  <button class="price-button" onclick="window.location.href='/filter'"
+                                    aria-label="Clear all filters">
+                                    Clear Filters
+                                  </button>
+                          </div>
+                          <% } %>
+            </main>
+          </div>
+
+          <% if (totalPages> 1) { %>
+            <div class="pagination">
+              <% if (currentPage> 1) { %>
+                <a class="btn" href="/filter?<%= buildQueryString({ page: currentPage - 1 }) %>"
+                  aria-label="Previous page">Previous</a>
+                <% } %>
+                  <% for (let i=1; i <=totalPages; i++) { %>
+                    <a class="btn <%= currentPage === i ? 'active' : '' %>"
+                      href="/filter?<%= buildQueryString({ page: i }) %>" aria-label="Page <%= i %>" <%=currentPage===i
+                      ? 'aria-current="page"' : '' %>
+                      >
+                      <%= i %>
+                    </a>
+                    <% } %>
+                      <% if (currentPage < totalPages) { %>
+                        <a class="btn" href="/filter?<%= buildQueryString({ page: currentPage + 1 }) %>"
+                          aria-label="Next page">Next</a>
+                        <% } %>
+            </div>
+            <% } %>
+    </section>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <script>
+    // Clear all filters
+    function clearAllFilters() {
+      window.location.href = '/filter';
+    }
+
+    // Handle form submissions
+    document.addEventListener('DOMContentLoaded', function () {
+      const searchForm = document.querySelector('.search-form');
+      searchForm.addEventListener('submit', function (e) {
+        const button = this.querySelector('button');
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+      });
+
+      let searchTimer;
+      document.querySelector('.search-input').addEventListener('input', function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+          if (this.value.trim().length > 2) {
+            this.form.submit();
+          }
+        }, 500);
+      });
+
+      document.getElementById('priceFilterForm').addEventListener('submit', function (e) {
+        const minPrice = parseFloat(this.minPrice.value);
+        const maxPrice = parseFloat(this.maxPrice.value);
+        if (minPrice < 0 || maxPrice < 0 || (minPrice && maxPrice && minPrice > maxPrice)) {
+          e.preventDefault();
+          alert('Please enter a valid price range');
+        }
+      });
+    });
+
+    function toggleWishlist(productId) {
+      const btn = document.querySelector(`.wishlist-btn[onclick="toggleWishlist('${productId}')"]`);
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+      fetch('/wishlist/toggle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+        },
+        body: JSON.stringify({ productId })
+      })
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.json();
+        })
+        .then(data => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-heart"></i>';
+          if (data.success) {
+            btn.classList.toggle('active');
+          } else {
+            alert(data.message || 'Failed to update wishlist');
+          }
+        })
+        .catch(error => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-heart"></i>';
+          alert('An error occurred while updating the wishlist');
+        });
+    }
+
+    function addToCart(productId) {
+      const btn = document.querySelector(`.add-to-cart-btn[onclick="addToCart('${productId}')"]`);
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+
+      fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+        },
+        body: JSON.stringify({ productId, quantity: 1 })
+      })
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.json();
+        })
+        .then(data => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
+          alert(data.success ? 'Product added to cart!' : data.message || 'Failed to add to cart');
+        })
+        .catch(error => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
+          alert('An error occurred while adding to cart');
+        });
+    }
+  </script>
+
+  <%- include("../../views/partials/user/footer") %>
+
+
+  
+
+  

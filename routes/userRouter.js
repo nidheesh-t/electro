@@ -7,6 +7,15 @@ const User = require("../models/userSchema");
 
 router.get("/pageNotFound", userController.pageNotFound);
 router.get("/", userController.loadHomePage);
+
+// Product Routes
+router.get("/shop", userController.loadShoppingPage);
+router.get("/filter", userController.filterProducts);
+router.get("/filterPrice", userController.filterByPrice);
+router.post("/search", userController.searchProducts);
+// router.get("/productDetails/:id", productController.productDetails);
+
+
 router.get("/signup", userController.loadSignup);
 router.post("/signup", userController.signup);
 router.get("/login", userController.loadLogin);
