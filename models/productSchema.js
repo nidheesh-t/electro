@@ -74,7 +74,11 @@ const productSchema = new Schema({
         type: String,
         enum: ["Available", "Out of Stock", "Discontinued"],
         default: "Available"
-    }
+    },
+    review: [{
+        type: Schema.Types.ObjectId,
+        ref: "Review",
+    }],
 }, { timestamps: true });
 
 // Pre-save hook to calculate totalQuantity from variants

@@ -2,8 +2,11 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/user/userController");
 const profileController = require("../controllers/user/profileController");
+const productController = require("../controllers/user/productController");
 const passport = require("../config/passport");
 const User = require("../models/userSchema");
+const Review = require("../models/reviewSchema");
+const mongoose = require("mongoose");
 
 router.get("/pageNotFound", userController.pageNotFound);
 router.get("/", userController.loadHomePage);
@@ -13,9 +16,26 @@ router.get("/shop", userController.loadShoppingPage);
 router.get("/filter", userController.filterProducts);
 router.get("/filterPrice", userController.filterByPrice);
 router.post("/search", userController.searchProducts);
-// router.get("/productDetails/:id", productController.productDetails);
+router.get("/productDetails/:id", productController.productDetails);
+
+// Review Routes
+router.post("/submit", productController.submitReview);
+router.get("/api/reviews/average/:productId", async (req, res) => {
+  try {
+    const productId = req.params.productId;
+    const averageRating = await Review.aggregate([
+      { $match: { product: new mongoose.Types.ObjectId(productId) } },
+      { $group: { _id: null, average: { $avg: "$rating" } } }
+    ]);
+    res.json({ average: averageRating[0]?.average || 0 });
+  } catch (error) {
+    console.error('Error fetching average rating:', error);
+    res.status(500).json({ average: 0 });
+  }
+})
 
 
+// Authentication Routes
 router.get("/signup", userController.loadSignup);
 router.post("/signup", userController.signup);
 router.get("/login", userController.loadLogin);
@@ -49,6 +69,7 @@ router.get("/check-session", async (req, res) => {
     }
 });
 router.get("/logout", userController.logout);
+
 // Profile management
 router.get('/forgot-password', profileController.getForgotPassPage);
 router.post('/forgot-email-valid', profileController.forgotEmailValid);

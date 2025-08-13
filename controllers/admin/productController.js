@@ -102,7 +102,7 @@ const addProducts = async (req, res) => {
                 const resizedPath = path.join("public", "uploads", "product-images", file.filename);
                 await sharp(file.path).resize(440, 440).toFile(resizedPath);
                 images.push(file.filename);
-                console.log(`Saved image: ${resizedPath}`);
+                // console.log(`Saved image: ${resizedPath}`);
             }
         }
 
@@ -123,7 +123,7 @@ const addProducts = async (req, res) => {
         });
 
         await newProduct.save();
-        console.log(`Product saved with images: ${images}`);
+        // console.log(`Product saved with images: ${images}`);
 
         res.status(200).json({
             success: true,
@@ -155,6 +155,7 @@ const getAllProducts = async (req, res) => {
             .limit(limit)
             .populate('brand', 'brandName')
             .populate('category', 'categoryName')
+            .sort({ createdAt: -1 })
             .lean();
 
         const total = await Product.countDocuments(filter);
@@ -204,7 +205,7 @@ const editProduct = async (req, res) => {
             deletedImages
         } = req.body;
 
-        console.log('Edit product request body:', { productName, deletedImages, files: req.files?.map(f => f.filename) });
+        // console.log('Edit product request body:', { productName, deletedImages, files: req.files?.map(f => f.filename) });
 
         const sanitizedProductName = sanitizeHtml(productName.trim().toLowerCase());
         const sanitizedDescription = sanitizeHtml(description);
@@ -297,7 +298,7 @@ const editProduct = async (req, res) => {
                     })
                     .toFile(resizedPath);
                 allNewImages.push(file.filename);
-                console.log(`Saved new image: ${resizedPath}`);
+                // console.log(`Saved new image: ${resizedPath}`);
             }
         }
 
@@ -331,7 +332,7 @@ const editProduct = async (req, res) => {
                 try {
                     if (fs.existsSync(imagePath)) {
                         fs.unlinkSync(imagePath);
-                        console.log(`Deleted image: ${imagePath}`);
+                        // console.log(`Deleted image: ${imagePath}`);
                     }
                 } catch (err) {
                     console.error(`Failed to delete image ${imagePath}:`, err);
@@ -340,7 +341,7 @@ const editProduct = async (req, res) => {
         }
 
         await Product.findByIdAndUpdate(id, updateFields, { new: true });
-        console.log(`Updated product ${id} with images: ${updateFields.productImage}`);
+        // console.log(`Updated product ${id} with images: ${updateFields.productImage}`);
 
         res.status(200).json({
             success: true,
@@ -375,7 +376,7 @@ const deleteSingleImage = async (req, res) => {
         );
         if (fs.existsSync(imagePath)) {
             fs.unlinkSync(imagePath);
-            console.log(`Deleted image: ${imagePath}`);
+            // console.log(`Deleted image: ${imagePath}`);
         }
         res.json({ status: true, message: "Image deleted successfully" });
     } catch (error) {
@@ -384,11 +385,31 @@ const deleteSingleImage = async (req, res) => {
     }
 };
 
+// const listProduct = async (req, res) => {
+//     try {
+//         const id = req.query.id;
+//         await Product.updateOne({ _id: id }, { $set: { isListed: true } });
+//         res.redirect("/admin/products");
+//     } catch (error) {
+//         handleError(res, error);
+//     }
+// };
+
+// const unlistProduct = async (req, res) => {
+//     try {
+//         const id = req.query.id;
+//         await Product.updateOne({ _id: id }, { $set: { isListed: false } });
+//         res.redirect("/admin/products");
+//     } catch (error) {
+//         handleError(res, error);
+//     }
+// };
+
 const listProduct = async (req, res) => {
     try {
         const id = req.query.id;
         await Product.updateOne({ _id: id }, { $set: { isListed: true } });
-        res.redirect("/admin/products");
+        res.status(200).json({ success: true, message: 'Product listed successfully' });
     } catch (error) {
         handleError(res, error);
     }
@@ -398,11 +419,13 @@ const unlistProduct = async (req, res) => {
     try {
         const id = req.query.id;
         await Product.updateOne({ _id: id }, { $set: { isListed: false } });
-        res.redirect("/admin/products");
+        res.status(200).json({ success: true, message: 'Product unlisted successfully' });
     } catch (error) {
         handleError(res, error);
     }
 };
+
+
 
 const deleteProduct = async (req, res) => {
     try {

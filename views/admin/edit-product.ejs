@@ -263,7 +263,7 @@
                 return;
             }
 
-            console.log('Selected files:', files.length);
+            // console.log('Selected files:', files.length);
             preview.innerHTML = '';
             cropperPreview.innerHTML = '';
             imageFiles = [];
@@ -271,7 +271,7 @@
             Swal.fire({ icon: "info", title: "Images Selected", text: `${files.length} image(s) selected. Total: ${totalImages}/4` });
 
             Array.from(files).forEach((file, index) => {
-                console.log(`Processing file ${index}: ${file.name}`);
+                // console.log(`Processing file ${index}: ${file.name}`);
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     const img = document.createElement('img');
@@ -307,7 +307,7 @@
         }
 
         function cropSingleImage(index) {
-            console.log(`Cropping image ${index}`);
+            // console.log(`Cropping image ${index}`);
             const canvas = imageFiles[index].cropper.getCroppedCanvas({ width: 440, height: 440 });
             canvas.toBlob(blob => {
                 const url = URL.createObjectURL(blob);
@@ -318,12 +318,12 @@
                 const file = new File([blob], imageFiles[index].file.name, { type: imageFiles[index].file.type });
                 croppedImages[index] = file;
                 document.getElementById(`cropper-image-${index}`).style.border = '2px solid green';
-                console.log(`Cropped image ${index}: ${file.name}`);
+                // console.log(`Cropped image ${index}: ${file.name}`);
             }, 'image/jpeg', 0.8); // Compress to 80% quality
         }
 
         function cropAllImages() {
-            console.log('Cropping all images');
+            // console.log('Cropping all images');
             croppedImages = [];
             imageFiles.forEach((fileObj, index) => {
                 if (fileObj.cropper) {
@@ -336,7 +336,7 @@
                         img.style.border = '2px solid green';
                         const file = new File([blob], fileObj.file.name, { type: fileObj.file.type });
                         croppedImages[index] = file;
-                        console.log(`Cropped all - image ${index}: ${file.name}`);
+                        // console.log(`Cropped all - image ${index}: ${file.name}`);
                         if (croppedImages.length === imageFiles.length) {
                             Swal.fire({ icon: "success", title: "Success", text: "All images cropped" });
                             document.getElementById('cropper-section').style.display = 'none';
@@ -347,7 +347,7 @@
         }
 
         function undoCrop(index) {
-            console.log(`Undoing crop for image ${index}`);
+            // console.log(`Undoing crop for image ${index}`);
             if (imageFiles[index].cropper) {
                 imageFiles[index].cropper.destroy();
             }
@@ -361,13 +361,13 @@
                 img.src = e.target.result;
                 img.style.border = 'none';
                 croppedImages[index] = null;
-                console.log(`Undo crop for image ${index}`);
+                // console.log(`Undo crop for image ${index}`);
             };
             reader.readAsDataURL(imageFiles[index].file);
         }
 
         function skipCropping() {
-            console.log('Skipping cropping');
+            // console.log('Skipping cropping');
             croppedImages = imageFiles.map(fileObj => fileObj.file);
             document.getElementById('cropper-section').style.display = 'none';
             Swal.fire({ icon: "info", title: "Skipped", text: "Cropping skipped, original images will be used" });
@@ -507,10 +507,10 @@
             croppedImages.forEach((file, index) => {
                 if (file) {
                     formData.append('images', file);
-                    console.log(`Appending image ${index}: ${file.name}`);
+                    // console.log(`Appending image ${index}: ${file.name}`);
                 }
             });
-            console.log('Submitting form with', formData.getAll('images').length, 'images');
+            // console.log('Submitting form with', formData.getAll('images').length, 'images');
 
             fetch(`/admin/editProduct/<%= product._id %>`, {
                 method: 'POST',
@@ -521,7 +521,7 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Form submission response:', data);
+                    // console.log('Form submission response:', data);
                     Swal.fire({ icon: 'success', title: 'Success', text: data.message })
                         .then(() => window.location.href = data.redirectUrl);
                 })

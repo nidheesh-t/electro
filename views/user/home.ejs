@@ -79,47 +79,57 @@
                 </div>
                 <div class="col-md-12">
                     <div class="row product__filter">
-						<% for (let i = 0; i < products.length; i++) { %>
-							<div class="col-lg-3 col-md-4 col-12 col-sm-6">
-								<div class="product">
-									<div class="product-img">
-										<img src="/uploads/re-image/<%= products[i].productImage[0] %>" alt="<%= products[i].productName %>">
-									</div>
-									<div class="product-body">
-										<h3 class="product-name">
-											<a href="/productDetails/<%= products[i]._id %>"><%= products[i].productName %></a>
-										</h3>
-										<h4 class="product-price">₹ <%= products[i].salePrice %>
-											<!-- Assuming regularPrice exists for displaying old price -->
-											<% if (products[i].regularPrice && products[i].regularPrice > products[i].salePrice) { %>
-												<del class="product-old-price">₹ <%= products[i].regularPrice %></del>
-											<% } %>
-										</h4>
-										<div class="product-rating">
-											<!-- Assuming rating is a number from 1 to 5 -->
-											<% for (let j = 0; j < 5; j++) { %>
-												<i class="fa fa-star<%= j < products[i].rating ? '' : '-o' %>"></i>
-											<% } %>
-										</div>
-										<div class="product-btns">
-											<button class="add-to-wishlist" onclick="window.location.href='/addToWishlist?id=<%= products[i]._id %>'">
-												<i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span>
-											</button>
-										<button class="quick-view">
-												<i class="fa fa-eye"></i><span class="tooltipp">quick view</span>
-											<!-- Assuming quick view functionality exists -->
-											</button>
-										</div>
-									</div>
-									<div class="add-to-cart">
-										<button class="add-to-cart-btn" onclick="window.location.href='/addToCart?id=<%= products[i]._id %>'">
-											<i class="fa fa-shopping-cart"></i> add to cart
-										</button>
-									</div>
-								</div>
-							</div>
-						<% } %>
-					</div>
+                        <% for (let i=0; i < products.length; i++) { %>
+                            <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                                <div class="product">
+                                    <a href="/productDetails/<%= products[i]._id %>">
+                                        <div class="product-img">
+                                            <img src="/uploads/re-image/<%= products[i].productImage[0] %>"
+                                                alt="<%= products[i].productName %>">
+                                        </div>
+                                    </a>
+                                    <div class="product-body">
+                                        <h3 class="product-name">
+                                            <a href="/productDetails/<%= products[i]._id %>">
+                                                <%= products[i].productName %>
+                                            </a>
+                                        </h3>
+                                        <h4 class="product-price">₹ <%= products[i].salePrice %>
+                                                <!-- Assuming regularPrice exists for displaying old price -->
+                                                <% if (products[i].regularPrice && products[i].regularPrice>
+                                                    products[i].salePrice) { %>
+                                                    <del class="product-old-price">₹ <%= products[i].regularPrice %>
+                                                            </del>
+                                                    <% } %>
+                                        </h4>
+                                        <div class="product-rating">
+                                            <!-- Assuming rating is a number from 1 to 5 -->
+                                            <% for (let j=0; j < 5; j++) { %>
+                                                <i class="fa fa-star<%= j < products[i].rating ? '' : '-o' %>"></i>
+                                                <% } %>
+                                        </div>
+                                        <div class="product-btns">
+                                            <button class="add-to-wishlist"
+                                                onclick="window.location.href='/addToWishlist?id=<%= products[i]._id %>'">
+                                                <i class="fa fa-heart-o"></i><span class="tooltipp">add to
+                                                    wishlist</span>
+                                            </button>
+                                            <button class="quick-view">
+                                                <i class="fa fa-eye"></i><span class="tooltipp">quick view</span>
+                                                <!-- Assuming quick view functionality exists -->
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="add-to-cart">
+                                        <button class="add-to-cart-btn"
+                                            onclick="window.location.href='/addToCart?id=<%= products[i]._id %>'">
+                                            <i class="fa fa-shopping-cart"></i> add to cart
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <% } %>
+                    </div>
                 </div>
             </div>
         </div>
@@ -133,10 +143,26 @@
                 <div class="col-md-12">
                     <div class="hot-deal">
                         <ul class="hot-deal-countdown">
-                            <li><div><h3>02</h3><span>Days</span></div></li>
-                            <li><div><h3>10</h3><span>Hours</span></div></li>
-                            <li><div><h3>34</h3><span>Mins</span></div></li>
-                            <li><div><h3>60</h3><span>Secs</span></div></li>
+                            <li>
+                                <div>
+                                    <h3>02</h3><span>Days</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div>
+                                    <h3>10</h3><span>Hours</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div>
+                                    <h3>34</h3><span>Mins</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div>
+                                    <h3>60</h3><span>Secs</span>
+                                </div>
+                            </li>
                         </ul>
                         <h2 class="text-uppercase">Hot Deal This Week</h2>
                         <p>New Collection Up to 50% OFF</p>
@@ -167,47 +193,57 @@
                 </div>
                 <div class="col-md-12">
                     <div class="row product__filter">
-						<% for (let i = 0; i < products.length; i++) { %>
-							<div class="col-lg-3 col-md-4 col-12 col-sm-6">
-								<div class="product">
-									<div class="product-img">
-										<img src="/uploads/re-image/<%= products[i].productImage[0] %>" alt="<%= products[i].productName %>">
-									</div>
-									<div class="product-body">
-										<h3 class="product-name">
-											<a href="/productDetails/<%= products[i]._id %>"><%= products[i].productName %></a>
-										</h3>
-										<h4 class="product-price">₹ <%= products[i].salePrice %>
-											<!-- Assuming regularPrice exists for displaying old price -->
-											<% if (products[i].regularPrice && products[i].regularPrice > products[i].salePrice) { %>
-												<del class="product-old-price">₹ <%= products[i].regularPrice %></del>
-											<% } %>
-										</h4>
-										<div class="product-rating">
-											<!-- Assuming rating is a number from 1 to 5 -->
-											<% for (let j = 0; j < 5; j++) { %>
-												<i class="fa fa-star<%= j < products[i].rating ? '' : '-o' %>"></i>
-											<% } %>
-										</div>
-										<div class="product-btns">
-											<button class="add-to-wishlist" onclick="window.location.href='/addToWishlist?id=<%= products[i]._id %>'">
-												<i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span>
-											</button>
-										<button class="quick-view">
-												<i class="fa fa-eye"></i><span class="tooltipp">quick view</span>
-											<!-- Assuming quick view functionality exists -->
-											</button>
-										</div>
-									</div>
-									<div class="add-to-cart">
-										<button class="add-to-cart-btn" onclick="window.location.href='/addToCart?id=<%= products[i]._id %>'">
-											<i class="fa fa-shopping-cart"></i> add to cart
-										</button>
-									</div>
-								</div>
-							</div>
-						<% } %>
-					</div>
+                        <% for (let i=0; i < products.length; i++) { %>
+                            <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                                <div class="product">
+                                    <a href="/productDetails/<%= products[i]._id %>">
+                                        <div class="product-img">
+                                            <img src="/uploads/re-image/<%= products[i].productImage[0] %>"
+                                                alt="<%= products[i].productName %>">
+                                        </div>
+                                    </a>
+                                    <div class="product-body">
+                                        <h3 class="product-name">
+                                            <a href="/productDetails/<%= products[i]._id %>">
+                                                <%= products[i].productName %>
+                                            </a>
+                                        </h3>
+                                        <h4 class="product-price">₹ <%= products[i].salePrice %>
+                                                <!-- Assuming regularPrice exists for displaying old price -->
+                                                <% if (products[i].regularPrice && products[i].regularPrice>
+                                                    products[i].salePrice) { %>
+                                                    <del class="product-old-price">₹ <%= products[i].regularPrice %>
+                                                            </del>
+                                                    <% } %>
+                                        </h4>
+                                        <div class="product-rating">
+                                            <!-- Assuming rating is a number from 1 to 5 -->
+                                            <% for (let j=0; j < 5; j++) { %>
+                                                <i class="fa fa-star<%= j < products[i].rating ? '' : '-o' %>"></i>
+                                                <% } %>
+                                        </div>
+                                        <div class="product-btns">
+                                            <button class="add-to-wishlist"
+                                                onclick="window.location.href='/addToWishlist?id=<%= products[i]._id %>'">
+                                                <i class="fa fa-heart-o"></i><span class="tooltipp">add to
+                                                    wishlist</span>
+                                            </button>
+                                            <button class="quick-view">
+                                                <i class="fa fa-eye"></i><span class="tooltipp">quick view</span>
+                                                <!-- Assuming quick view functionality exists -->
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="add-to-cart">
+                                        <button class="add-to-cart-btn"
+                                            onclick="window.location.href='/addToCart?id=<%= products[i]._id %>'">
+                                            <i class="fa fa-shopping-cart"></i> add to cart
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <% } %>
+                    </div>
                 </div>
             </div>
         </div>
@@ -238,4 +274,4 @@
     </div>
     <!-- /NEWSLETTER -->
 
-<%- include("../../views/partials/user/footer") %>
+    <%- include("../../views/partials/user/footer") %>
