@@ -139,11 +139,47 @@ const addProducts = async (req, res) => {
     }
 };
 
+// const getAllProducts = async (req, res) => {
+//     try {
+//         const search = req.query.search || "";
+//         const page = parseInt(req.query.page) || 1;
+//         const limit = 4;
+
+//         const filter = {
+//             isDeleted: false,
+//             productName: { $regex: new RegExp(search, "i") }
+//         };
+
+//         const products = await Product.find(filter)
+//             .skip((page - 1) * limit)
+//             .limit(limit)
+//             .populate('brand', 'brandName')
+//             .populate('category', 'categoryName')
+//             .sort({ createdAt: -1 })
+//             .lean();
+
+//         const total = await Product.countDocuments(filter);
+//         const categories = await Category.find({ isListed: true, isDeleted: false });
+//         const brands = await Brand.find({ isListed: true, isDeleted: false });
+
+//         res.render("products", {
+//             data: products,
+//             currentPage: page,
+//             totalPages: Math.ceil(total / limit),
+//             cat: categories,
+//             brand: brands,
+//             search
+//         });
+//     } catch (error) {
+//         handleError(res, error);
+//     }
+// }
+
 const getAllProducts = async (req, res) => {
     try {
         const search = req.query.search || "";
         const page = parseInt(req.query.page) || 1;
-        const limit = 4;
+        const limit = 5;
 
         const filter = {
             isDeleted: false,
@@ -151,19 +187,33 @@ const getAllProducts = async (req, res) => {
         };
 
         const products = await Product.find(filter)
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .populate('brand', 'brandName')
-            .populate('category', 'categoryName')
+            .populate({
+                path: 'brand',
+                select: 'brandName isListed',
+                match: { isListed: true, isDeleted: false }
+            })
+            .populate({
+                path: 'category',
+                select: 'categoryName isListed',
+                match: { isListed: true, isDeleted: false }
+            })
             .sort({ createdAt: -1 })
             .lean();
 
-        const total = await Product.countDocuments(filter);
+        // Filter out products where brand or category is null
+        const filteredProducts = products.filter(product => 
+            product.brand !== null && product.category !== null
+        );
+        
+        // Apply pagination after filtering
+        const paginatedProducts = filteredProducts.slice((page - 1) * limit, page * limit);
+
+        const total = filteredProducts.length;
         const categories = await Category.find({ isListed: true, isDeleted: false });
         const brands = await Brand.find({ isListed: true, isDeleted: false });
 
         res.render("products", {
-            data: products,
+            data: paginatedProducts,
             currentPage: page,
             totalPages: Math.ceil(total / limit),
             cat: categories,
@@ -173,7 +223,7 @@ const getAllProducts = async (req, res) => {
     } catch (error) {
         handleError(res, error);
     }
-};
+}
 
 const getEditProduct = async (req, res) => {
     try {
