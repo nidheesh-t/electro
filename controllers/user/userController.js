@@ -82,38 +82,101 @@ function buildQueryString(params, existingQuery = {}) {
 //     }
 // }
 
+// const loadHomePage = async (req, res) => {
+//     try {
+//         const user = req.session.user;
+//         const categories = await Category.find({ isDeleted: false, isListed: true });
+
+//         let productData = await Product.find({
+//             isDeleted: false,
+//             isListed: true,
+//             category: { $in: categories.map(category => category._id) },
+//             totalQuantity: { $gt: 0 }
+//         });
+
+//         productData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+//         productData = productData.slice(0, 4);
+
+//         if (user) {
+//             const userData = await User.findById(user);
+//             if (userData.isBlock) {
+//                 req.session.user = null;
+//                 return res.redirect('/login');
+//             } else {
+//                 res.render('home', { user: userData, products: productData });
+//             }
+//         } else {
+//             return res.render('home', { products: productData });
+//         }
+
+//     } catch (error) {
+//         console.error('Error loading home page:', error);
+//         res.status(500).send('Internal Server Error');
+//     }
+// }
+
+
 const loadHomePage = async (req, res) => {
-    try {
-        const user = req.session.user;
-        const categories = await Category.find({ isDeleted: false, isListed: true });
+  try {
+    const user = req.session.user;
 
-        let productData = await Product.find({
-            isDeleted: false,
-            isListed: true,
-            category: { $in: categories.map(category => category._id) },
-            totalQuantity: { $gt: 0 }
-        });
+    // Fetch categories that are listed and not deleted
+    const categories = await Category.find({ isDeleted: false, isListed: true }).lean();
 
-        productData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        productData = productData.slice(0, 4);
-
-        if (user) {
-            const userData = await User.findById(user);
-            if (userData.isBlock) {
-                req.session.user = null;
-                return res.redirect('/login');
-            } else {
-                res.render('home', { user: userData, products: productData });
-            }
-        } else {
-            return res.render('home', { products: productData });
-        }
-
-    } catch (error) {
-        console.error('Error loading home page:', error);
-        res.status(500).send('Internal Server Error');
+    // If no valid categories, redirect to /pageNotFound
+    if (!categories || categories.length === 0) {
+      return res.redirect('/pageNotFound');
     }
+
+    // Fetch products with valid categories and brands
+    let productData = await Product.find({
+      isDeleted: false,
+      isListed: true,
+      category: { $in: categories.map(category => category._id) },
+      totalQuantity: { $gt: 0 }
+    })
+      .populate({
+        path: 'brand',
+        match: { isListed: true, isDeleted: false }
+      })
+      .lean();
+
+    // Filter out products where brand is null (i.e., brand is not listed or deleted)
+    productData = productData.filter(product => product.brand !== null);
+
+    // If no valid products, redirect to /pageNotFound
+    if (!productData || productData.length === 0) {
+      return res.redirect('/pageNotFound');
+    }
+
+    // Sort products by createdAt (descending) and limit to 4
+    productData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    productData = productData.slice(0, 4);
+
+    // Handle user session
+    if (user) {
+      const userData = await User.findById(user).lean();
+      if (userData && userData.isBlock) {
+        req.session.user = null;
+        return res.redirect('/login');
+      }
+      return res.render('home', { user: userData, products: productData });
+    }
+
+    // Render home page for non-logged-in users
+    return res.render('home', { products: productData });
+
+  } catch (error) {
+    console.error('Error loading home page:', {
+      error: error.message,
+      stack: error.stack,
+      userId: req.session.user
+    });
+    return res.redirect('/pageNotFound');
+  }
 }
+
+
 
 const pageNotFound = async (req, res) => {
     try {
@@ -972,26 +1035,25 @@ const filterProducts = async (req, res) => {
 const demoLogin = async (req, res) => {
     try {
         // Check if a demo user exists
-        let demoUser = await User.findOne({ email: 'demo@example.com' });
+        let demoUser = await User.findOne({ email: 'demo@123.com' });
 
         // If no demo user exists, create one
         if (!demoUser) {
             const demoPassword = 'Demo1234'; // Default password
             const passwordHash = await securePassword(demoPassword);
             demoUser = new User({
-                name: 'Demo User',
-                email: 'demo@example.com',
-                phone: '1234567890',
+                firstName: 'Demo',
+                lastName: 'User',
+                email: 'demo@123.com',
+                phone: 'demo@123.com',
                 password: passwordHash,
-                isBlocked: false,
-                isAdmin: false,
-                isDemo: true // Optional: Mark as demo user
+                isBlock: false,
             });
             await demoUser.save();
         }
 
         // Check if the demo user is blocked
-        if (demoUser.isBlocked) {
+        if (demoUser.isBlock) {
             req.flash('error', 'Demo account is blocked. Please contact support.');
             return res.redirect('/login');
         }

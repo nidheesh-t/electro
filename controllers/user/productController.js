@@ -6,6 +6,91 @@ const Review = require('../../models/reviewSchema');
 const mongoose = require('mongoose');
 
 
+// const productDetails = async (req, res) => {
+//   try {
+//     const userId = req.session.user;
+//     let userData = null;
+
+//     if (userId) {
+//       userData = await User.findById(userId).lean();
+//       if (userData) {
+//         req.session.userName = `${userData.firstName} ${userData.lastName}`;
+//       }
+//     }
+
+//     const productId = req.params.id;
+
+//     const product = await Product.findOne({
+//       _id: new mongoose.Types.ObjectId(productId),
+//       isListed: true,
+//       isDeleted: false
+//     })
+//             .populate({
+//                 path: 'brand',
+//                 match: { isListed: true, isDeleted: false }
+//             })
+//             .populate({
+//                 path: 'category',
+//                 match: { isListed: true, isDeleted: false }
+//             })
+//             .lean();
+
+//     if (!product) {
+//       return res.redirect('/pageNotFound');
+//     }
+
+//     const reviews = await Review.find({
+//       product: new mongoose.Types.ObjectId(productId)
+//     })
+//       .populate('user', 'firstName lastName')
+//       .sort({ createdAt: -1 })
+//       .limit(5)
+//       .lean();
+
+//     const averageRating = await Review.aggregate([
+//       { $match: { product: new mongoose.Types.ObjectId(productId) } },
+//       { $group: { _id: null, average: { $avg: '$rating' } } }
+//     ]);
+
+//     const relatedProducts = await Product.find({
+//       category: new mongoose.Types.ObjectId(product.category._id),
+//       _id: { $ne: new mongoose.Types.ObjectId(productId) },
+//       isListed: true,
+//       isDeleted: false
+//     })
+//       .limit(4)
+//       .populate('brand')
+//       .lean();
+
+//     const variants = product.variants || [];
+
+//     const categoryOffer = Number(product.category?.categoryOffer) || 0;
+//     const productOffer = Number(product.productOffer) || 0;
+//     const totalOffer = categoryOffer + productOffer;
+
+//     res.render('product-details', {
+//       user: userData,
+//       product,
+//       quantity: product.totalTotal,
+//       totalOffer,
+//       category: product.category,
+//       reviews,
+//       averageRating: averageRating[0]?.average || 0,
+//       relatedProducts,
+//       specs: variants.flatMap(v => v.specs)
+//     });
+
+//   } catch (error) {
+//     console.error('Error fetching product details:', {
+//       error: error.message,
+//       stack: error.stack,
+//       productId: req.params.id,
+//       userId: req.session.user
+//     });
+//     res.redirect('/pageNotFound');
+//   }
+// };
+
 const productDetails = async (req, res) => {
   try {
     const userId = req.session.user;
@@ -25,11 +110,18 @@ const productDetails = async (req, res) => {
       isListed: true,
       isDeleted: false
     })
-      .populate('category')
-      .populate('brand')
+      .populate({
+        path: 'brand',
+        match: { isListed: true, isDeleted: false }
+      })
+      .populate({
+        path: 'category',
+        match: { isListed: true, isDeleted: false }
+      })
       .lean();
 
-    if (!product) {
+    // Check if product, brand, or category is invalid
+    if (!product || !product.brand || !product.category) {
       return res.redirect('/pageNotFound');
     }
 
@@ -83,8 +175,7 @@ const productDetails = async (req, res) => {
     });
     res.redirect('/pageNotFound');
   }
-};
-
+}
 
 const submitReview = async (req, res) => {
   try {

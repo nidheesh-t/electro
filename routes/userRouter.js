@@ -91,5 +91,7 @@ router.post('/verify-change-pass-otp', profileController.verifyChangePassOtp)
 router.get('/reset-password-profile', profileController.getPassProfile)
 router.post('/reset-password-profile', profileController.postChangePassword)
 
+router.post("/demo-login", userController.demoLogin);
+
 
 module.exports = router;
