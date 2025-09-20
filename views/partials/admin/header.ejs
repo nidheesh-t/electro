@@ -3,62 +3,237 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - E-commerce</title>
     <!-- Import Google Icon Font + Materialize CSS -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <style>
+        :root {
+            --primary-color: #3949ab;
+            --primary-dark: #2e3b8b;
+            --accent-color: #5c6bc0;
+            --text-color: #333333;
+            --bg-color: #f7f9fc;
+            --card-bg: #ffffff;
+            --logout-color: #e74c3c;
+            --logout-hover: #c0392b;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5c6bc0;
+            --primary-dark: #3949ab;
+            --accent-color: #7986cb;
+            --text-color: #e0e0e0;
+            --bg-color: #1a1a1a;
+            --card-bg: #252525;
+        }
+
         body {
-            background: #f5f5f5;
+            background: var(--bg-color);
+            font-family: 'Roboto', sans-serif;
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         nav {
-            background-color: #3949ab;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-wrapper .brand-logo {
+            font-weight: 500;
+            font-size: 2rem;
+            letter-spacing: 0.5px;
         }
 
         .sidenav {
-            width: 250px;
+            width: 260px;
+            background: var(--card-bg);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .sidenav .user-view {
+            padding: 24px 24px 0;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+        }
+
+        .sidenav .user-view .name,
+        .sidenav .user-view .email {
+            font-weight: 400;
+            font-size: 1.15rem;
+            margin: 10px 0;
+            color: #ffffff;
+        }
+
+        .sidenav .profile-icon .material-icons {
+            font-size: 60px;
+            border-radius: 50%;
+            background-color: #e8ecef;
+            padding: 10px;
+            color: var(--primary-dark);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .sidenav .profile-icon:hover .material-icons {
+            transform: scale(1.1);
+            background-color: #d1d5db;
+        }
+
+        .sidenav .menu-item {
+            transition: background-color 0.2s ease;
+        }
+
+        .sidenav .menu-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        [data-theme="dark"] .sidenav .menu-item:hover {
+            background-color: #333333;
+        }
+
+        .sidenav .menu-item.active {
+            background-color: rgba(var(--primary-color), 0.1);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .sidenav .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 14px 28px;
+            color: var(--text-color);
+            font-size: 1.05rem;
+            font-weight: 400;
+            transition: color 0.2s ease, padding-left 0.2s ease, background-color 0.2s ease;
+            position: relative;
+        }
+
+        .sidenav .menu-link:hover {
+            color: var(--primary-dark);
+            padding-left: 34px;
+        }
+
+        .sidenav .menu-link:focus {
+            outline: none;
+            background-color: rgba(var(--primary-color), 0.2);
+        }
+
+        .sidenav .menu-link .material-icons {
+            margin-right: 14px;
+            color: #666;
+            transition: color 0.2s ease;
+        }
+
+        .sidenav .menu-link:hover .material-icons {
+            color: var(--primary-dark);
+        }
+
+        .sidenav .menu-item.active .menu-link,
+        .sidenav .menu-item.active .menu-link .material-icons {
+            color: var(--primary-dark);
+            font-weight: 500;
+        }
+
+        .sidenav .menu-link::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 100%;
+            margin-left: 10px;
+            background: var(--primary-dark);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+
+        .sidenav .menu-link:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sidenav .logout-item {
+            margin-top: 24px;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 12px;
+        }
+
+        [data-theme="dark"] .sidenav .logout-item {
+            border-top: 1px solid #444;
+        }
+
+        .sidenav .logout-item .menu-link {
+            color: var(--logout-color);
+            font-weight: 500;
+        }
+
+        .sidenav .logout-item .menu-link:hover {
+            background-color: #fff5f5;
+            color: var(--logout-hover);
+        }
+
+        [data-theme="dark"] .sidenav .logout-item .menu-link:hover {
+            background-color: #3a2f2f;
         }
 
         .dashboard-cards .card {
-            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dashboard-cards .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
 
         .table-section {
-            margin-top: 30px;
+            margin-top: 48px;
+            padding: 0 24px;
         }
 
-        .profile-icon .material-icons {
-            font-size: 48px;
-            border-radius: 50%;
-            background-color: #f0f0f0;
-            padding: 4px;
-            color: #555;
+        /* Responsive Design */
+        @media screen and (max-width: 992px) {
+            .sidenav {
+                width: 220px;
+            }
+
+            .nav-wrapper .brand-logo {
+                font-size: 1.6rem;
+            }
         }
 
-        .logout-item {
-            margin-top: 20px;
-            border-top: 1px solid #ccc;
-            padding-top: 10px;
-        }
+        @media screen and (max-width: 600px) {
+            .sidenav {
+                width: 100%;
+                transform: translateX(-100%);
+            }
 
-        .logout-item .menu-link {
-            color: #e74c3c;
-            /* Red color */
-            font-weight: bold;
-        }
+            .sidenav.sidenav-fixed {
+                transform: translateX(0);
+            }
 
-        .logout-item .menu-link:hover {
-            background-color: #f9e6e6;
+            .nav-wrapper .brand-logo {
+                font-size: 1.4rem;
+            }
+
+            .sidenav .menu-link::after {
+                display: none;
+            }
         }
-        
     </style>
-    
 </head>
 
 <body>
-
     <!-- Navbar -->
     <nav>
         <div class="nav-wrapper">
@@ -68,76 +243,109 @@
     </nav>
 
     <!-- Sidebar -->
-    <ul id="slide-out" class="sidenav sidenav-fixed">
+    <ul id="slide-out" class="sidenav sidenav-fixed" role="navigation">
         <li>
             <div class="user-view">
-                <div class="background blue darken-3"></div>
-                <a href="#user" class="profile-icon"><i class="material-icons">account_circle</i></a>
-                <a href="#name"><span class="white-text name">Admin Name</span></a>
-                <a href="#email"><span class="white-text email">admin@example.com</span></a>
+                <div class="logo-container">
+                    <img src="../img/logo1.png" alt="Logo" class="sidebar-logo">
+                </div>
+                <div class="background"></div>
+                <hr>
+                <a href="#name"><span class="white-text name">Admin</span></a>
+                <a href="#email"><span class="white-text email">admin@123.com</span></a>
             </div>
         </li>
         <li class="menu-item">
-            <a class="menu-link" href="/admin">
+            <a class="menu-link" href="/admin" data-tooltip="Dashboard Overview" aria-label="Dashboard">
                 <i class="material-icons">dashboard</i>
                 <span class="text">Dashboard</span>
             </a>
         </li>
         <li class="menu-item">
-            <a class="menu-link" href="/admin/users">
+            <a class="menu-link" href="/admin/users" data-tooltip="Manage Customers" aria-label="Customers">
                 <i class="material-icons">group</i>
                 <span class="text">Customers</span>
             </a>
         </li>
         <li class="menu-item">
-            <a class="menu-link" href="/admin/orders">
+            <a class="menu-link" href="#" data-tooltip="View Orders" aria-label="Orders">
                 <i class="material-icons">shopping_cart</i>
                 <span class="text">Orders</span>
             </a>
         </li>
         <li class="menu-item">
-            <a class="menu-link" href="/admin/category">
+            <a class="menu-link" href="/admin/category" data-tooltip="Manage Categories" aria-label="Categories">
                 <i class="material-icons">category</i>
                 <span class="text">Category</span>
             </a>
         </li>
         <li class="menu-item">
-            <a class="menu-link" href="/admin/brands">
+            <a class="menu-link" href="/admin/brands" data-tooltip="Manage Brands" aria-label="Brands">
                 <i class="material-icons">grade</i>
                 <span class="text">Brands</span>
             </a>
         </li>
         <li class="menu-item">
-            <a class="menu-link" href="/admin/addProducts">
+            <a class="menu-link" href="/admin/addProducts" data-tooltip="Add New Product" aria-label="Add Product">
                 <i class="material-icons">add_circle</i>
                 <span class="text">Add product</span>
             </a>
         </li>
         <li class="menu-item">
-            <a class="menu-link" href="/admin/products">
+            <a class="menu-link" href="/admin/products" data-tooltip="Manage Products" aria-label="Products">
                 <i class="material-icons">inventory_2</i>
                 <span class="text">Products</span>
             </a>
         </li>
         <li class="menu-item">
-            <a class="menu-link" href="/admin/coupon">
+            <a class="menu-link" href="#" data-tooltip="Manage Coupons" aria-label="Coupons">
                 <i class="material-icons">confirmation_number</i>
                 <span class="text">Coupon</span>
             </a>
         </li>
         <li class="menu-item">
-            <a class="menu-link" href="/admin/banner">
+            <a class="menu-link" href="#" data-tooltip="Manage Banners" aria-label="Banners">
                 <i class="material-icons">image</i>
                 <span class="text">Banner</span>
             </a>
         </li>
         <li class="menu-item logout-item">
-            <a class="menu-link" href="/admin/logout">
+            <a class="menu-link" href="/admin/logout" data-tooltip="Sign Out" aria-label="Logout">
                 <i class="material-icons">logout</i>
                 <span class="text">Logout</span>
             </a>
         </li>
-
-
-
     </ul>
+
+    <!-- Materialize JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize sidenav
+            var elems = document.querySelectorAll('.sidenav');
+            M.Sidenav.init(elems, { edge: 'left' });
+
+            // Highlight active menu item based on current URL
+            const currentPath = window.location.pathname;
+            const menuLinks = document.querySelectorAll('.sidenav .menu-link');
+            menuLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.parentElement.classList.add('active');
+                }
+            });
+
+            // Toggle dark mode (example implementation)
+            const toggleDarkMode = () => {
+                const body = document.body;
+                const currentTheme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                body.setAttribute('data-theme', currentTheme);
+                localStorage.setItem('theme', currentTheme);
+            };
+
+            // Apply saved theme
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('data-theme', savedTheme);
+            }
+        });
+    </script>

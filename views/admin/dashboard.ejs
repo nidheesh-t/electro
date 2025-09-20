@@ -1,88 +1,204 @@
 <%- include("../../views/partials/admin/header") %>
 
+<main class="container" style="margin-left: 270px; padding-top: 30px;">
 
-    <!-- Main Content -->
-    <main style="margin-left: 260px; padding: 20px;">
-        <!-- Dashboard Cards -->
-        <div class="row dashboard-cards">
-            <div class="col s12 m6 l3">
-                <div class="card white z-depth-2">
-                    <div class="card-content center">
-                        <span class="card-title">Sales</span>
-                        <h5>0</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col s12 m6 l3">
-                <div class="card white z-depth-2">
-                    <div class="card-content center">
-                        <span class="card-title">Orders</span>
-                        <h5>0</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col s12 m6 l3">
-                <div class="card white z-depth-2">
-                    <div class="card-content center">
-                        <span class="card-title">Products</span>
-                        <h5><%= productCount %></h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col s12 m6 l3">
-                <div class="card white z-depth-2">
-                    <div class="card-content center">
-                        <span class="card-title">Users</span>
-                        <h5><%= userCount %></h5>
-                    </div>
-                </div>
-            </div>
+
+<!-- Dashboard Cards -->
+  <div class="row dashboard-cards">
+    <div class="col s12 m6 l3">
+      <div class="card z-depth-3 hoverable" style="border-radius: 12px; overflow: hidden;">
+        <div class="card-content center" style="background: linear-gradient(135deg, #3949ab 0%, #5c6bc0 100%); color: #ffffff;">
+          <i class="material-icons medium" style="margin-bottom: 10px;">monetization_on</i>
+          <span class="card-title" style="font-size: 1.2rem; font-weight: 500;">Sales</span>
+          <h5 style="font-size: 2rem; margin: 10px 0;">0</h5>
         </div>
-
-        <!-- Product Table -->
-        <div class="card table-section">
-            <div class="card-content">
-                <span class="card-title">Recent Products</span>
-                <table class="highlight responsive-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Brand</th>
-                            <th>Category</th>
-                            <th>Price</th>
-                            <th>Stock</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Smartphone</td>
-                            <td>Samsung</td>
-                            <td>Electronics</td>
-                            <td>$299</td>
-                            <td>23</td>
-                            <td><span class="green-text">Active</span></td>
-                        </tr>
-                        <tr>
-                            <td>Headphones</td>
-                            <td>Sony</td>
-                            <td>Accessories</td>
-                            <td>$99</td>
-                            <td>12</td>
-                            <td><span class="green-text">Active</span></td>
-                        </tr>
-                        <tr>
-                            <td>Backpack</td>
-                            <td>Nike</td>
-                            <td>Travel</td>
-                            <td>$45</td>
-                            <td>0</td>
-                            <td><span class="red-text">Out of Stock</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+      </div>
+    </div>
+    <div class="col s12 m6 l3">
+      <div class="card z-depth-3 hoverable" style="border-radius: 12px; overflow: hidden;">
+        <div class="card-content center" style="background: linear-gradient(135deg, #0288d1 0%, #4fc3f7 100%); color: #ffffff;">
+          <i class="material-icons medium" style="margin-bottom: 10px;">shopping_cart</i>
+          <span class="card-title" style="font-size: 1.2rem; font-weight: 500;">Orders</span>
+          <h5 style="font-size: 2rem; margin: 10px 0;">0</h5>
         </div>
-    </main>
+      </div>
+    </div>
+    <div class="col s12 m6 l3">
+      <div class="card z-depth-3 hoverable" style="border-radius: 12px; overflow: hidden;">
+        <div class="card-content center" style="background: linear-gradient(135deg, #43a047 0%, #66bb6a 100%); color: #ffffff;">
+          <i class="material-icons medium" style="margin-bottom: 10px;">inventory_2</i>
+          <span class="card-title" style="font-size: 1.2rem; font-weight: 500;">Products</span>
+          <h5 style="font-size: 2rem; margin: 10px 0;"><%= productCount %></h5>
+        </div>
+      </div>
+    </div>
+    <div class="col s12 m6 l3">
+      <div class="card z-depth-3 hoverable" style="border-radius: 12px; overflow: hidden;">
+        <div class="card-content center" style="background: linear-gradient(135deg, #f06292 0%, #f48fb1 100%); color: #ffffff;">
+          <i class="material-icons medium" style="margin-bottom: 10px;">people</i>
+          <span class="card-title" style="font-size: 1.2rem; font-weight: 500;">Users</span>
+          <h5 style="font-size: 2rem; margin: 10px 0;"><%= userCount %></h5>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <%- include("../../views/partials/admin/footer") %>
+  <!-- Product Table -->
+  <div class="card table-section z-depth-3" style="border-radius: 12px; overflow: hidden;">
+    <div class="card-content">
+      <span class="card-title" style="font-size: 1.5rem; font-weight: 500; color: #1a237e;">Recent Products</span>
+      <table class="highlight responsive-table" role="grid" aria-label="Recent Products Table">
+        <thead>
+          <tr style="background: #f5f5f5;">
+            <th style="font-weight: 500; color: #1a237e;">Name</th>
+            <th style="font-weight: 500; color: #1a237e;">Brand</th>
+            <th style="font-weight: 500; color: #1a237e;">Category</th>
+            <th style="font-weight: 500; color: #1a237e;">Price</th>
+            <th style="font-weight: 500; color: #1a237e;">Stock</th>
+            <th style="font-weight: 500; color: #1a237e;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="hoverable-row">
+            <td>Smartphone</td>
+            <td>Samsung</td>
+            <td>Electronics</td>
+            <td>$299</td>
+            <td>23</td>
+            <td><span class="status-chip green-text">Active</span></td>
+          </tr>
+          <tr class="hoverable-row">
+            <td>Headphones</td>
+            <td>Sony</td>
+            <td>Accessories</td>
+            <td>$99</td>
+            <td>12</td>
+            <td><span class="status-chip green-text">Active</span></td>
+          </tr>
+          <tr class="hoverable-row">
+            <td>Backpack</td>
+            <td>Nike</td>
+            <td>Travel</td>
+            <td>$45</td>
+            <td>0</td>
+            <td><span class="status-chip red-text">Out of Stock</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<%- include("../../views/partials/admin/footer") %>
+<style>
+  body {
+    font-family: 'Roboto', sans-serif;
+    background: #f1f4f8;
+  }
+
+  .dashboard-cards .card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .dashboard-cards .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .dashboard-cards .card-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .table-section {
+    margin-top: 30px;
+  }
+
+  .table-section .card-content {
+    padding: 25px;
+  }
+
+  table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .hoverable-row:hover {
+    background: #f8f9fa;
+    transition: background 0.2s ease;
+  }
+
+  .status-chip {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .green-text {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  .red-text {
+    background: #ffebee;
+    color: #d32f2f;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 992px) {
+    main {
+      margin-left: 0;
+      padding: 15px;
+    }
+
+    .dashboard-cards .col {
+      margin-bottom: 20px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .dashboard-cards .card-content {
+      padding: 15px;
+    }
+
+    .dashboard-cards .card-title {
+      font-size: 1rem;
+    }
+
+    .dashboard-cards h5 {
+      font-size: 1.5rem;
+    }
+
+    .table-section .card-content {
+      padding: 15px;
+    }
+
+    th, td {
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+  }
+
+  /* Accessibility */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+</style>
+
+<%- include("../../views/partials/admin/footer") %>

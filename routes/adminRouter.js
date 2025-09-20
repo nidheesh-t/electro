@@ -6,6 +6,7 @@ const customerController = require('../controllers/admin/customerController');
 const categoryController = require('../controllers/admin/categoryController');
 const brandController = require('../controllers/admin/brandController');
 const productController = require('../controllers/admin/productController');
+const editProductController = require("../controllers/admin/editProductController")
 const multer = require('multer');
 const storage = require('../helpers/multer');
 const uploads = multer({ storage: storage });
@@ -44,11 +45,11 @@ router.post("/editBrand", uploads.single("image"), brandController.postEditBrand
 router.get("/addProducts", productController.getProductAddPage);
 router.post("/addProducts", uploads.array("images", 4), productController.addProducts);
 router.get("/products", productController.getAllProducts);
-router.get("/listProduct", productController.listProduct);
-router.get("/unlistProduct", productController.unlistProduct);
-router.get("/editProduct", productController.getEditProduct);
-router.post("/editProduct/:id", uploads.array("images", 4), productController.editProduct);
-router.get("/deleteProduct", productController.deleteProduct);
-router.post("/deleteSingleImage", productController.deleteSingleImage);
+router.get("/listProduct", editProductController.listProduct);
+router.get("/unlistProduct", editProductController.unlistProduct);
+router.get("/editProduct", editProductController.getEditProduct);
+router.post("/editProduct/:id", uploads.array("images", 4), editProductController.editProduct);
+router.get("/deleteProduct", editProductController.deleteProduct);
+router.post("/deleteSingleImage", editProductController.deleteSingleImage);
 
 module.exports = router;

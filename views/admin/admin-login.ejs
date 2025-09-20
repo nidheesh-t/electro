@@ -3,126 +3,279 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Login</title>
-  <!-- Materialize CSS + Google Icons -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login - Electro Store</title>
+  <!-- Materialize CSS + Google Icons + Roboto Font -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
   <style>
     body {
-      background: #f5f5f5;
+      background: linear-gradient(135deg, #e8ecef 0%, #f1f4f8 100%);
       display: flex;
-      height: 100vh;
+      min-height: 100vh;
       justify-content: center;
       align-items: center;
       font-family: 'Roboto', sans-serif;
+      margin: 0;
+      overflow: hidden;
     }
 
     .login-card {
-      padding: 40px 30px;
-      max-width: 400px;
-      width: 100%;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-      border-radius: 8px;
-      background: white;
+      padding: 40px 35px;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+      border-radius: 16px;
+      background: #ffffff;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .login-card .brand-logo {
+    .login-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.15);
+    }
+
+    .logo-container {
       display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 35px;
+    }
+
+    .logo-img {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3949ab 0%, #6b7cff 100%);
+      display: flex;
+      align-items: center;
       justify-content: center;
-      margin-bottom: 30px;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 28px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: transform 0.3s ease;
     }
 
-    .login-card .brand-logo img {
-      width: 100px;
+    .logo-img:hover {
+      transform: scale(1.05);
     }
 
-    .input-field input[type="email"]:focus+label,
-    .input-field input[type="password"]:focus+label {
-      color: #3949ab !important;
+    .logo-text {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1a237e;
+      letter-spacing: 0.5px;
+      margin-top: 10px;
+    }
+
+    .logo-subtext {
+      font-size: 13px;
+      color: #757575;
+      font-weight: 300;
+      margin-top: 6px;
+    }
+
+    .input-field {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .input-field input[type="email"],
+    .input-field input[type="password"] {
+      border-radius: 8px;
+      padding: 10px 15px;
+      background: #f9fafb;
+      border: 1px solid #e0e0e0;
+      transition: all 0.3s ease;
+      height: 48px;
+      box-sizing: border-box;
     }
 
     .input-field input[type="email"]:focus,
     .input-field input[type="password"]:focus {
-      border-bottom: 1px solid #3949ab !important;
-      box-shadow: 0 1px 0 0 #3949ab !important;
+      border: 1px solid #3949ab;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.1);
+    }
+
+    .input-field label {
+      font-size: 0.95rem;
+      color: #757575;
+      transition: all 0.3s ease;
+      left: 15px;
+    }
+
+    .input-field input:focus + label,
+    .input-field input:not(:placeholder-shown) + label {
+      transform: translateY(-28px) translateX(-10px);
+      font-size: 0.75rem;
+      color: #3949ab;
     }
 
     .btn-login {
-      background-color: #3949ab;
+      background: linear-gradient(90deg, #3949ab, #5c6bc0);
       width: 100%;
+      height: 48px;
+      border-radius: 24px;
+      text-transform: none;
+      font-weight: 500;
+      font-size: 1rem;
+      letter-spacing: 0.5px;
+      transition: background 0.3s ease, transform 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       margin-top: 20px;
     }
 
-    .login-footer {
-      margin-top: 20px;
-      text-align: center;
-      color: #757575;
-      font-size: 0.9rem;
+    .btn-login:hover {
+      background: linear-gradient(90deg, #5c6bc0, #3949ab);
+      transform: translateY(-2px);
+    }
+
+    .btn-login:active {
+      transform: translateY(0);
     }
 
     .error-message {
-      background-color: #ef5350;
-      color: #fff;
-      padding: 10px 15px;
-      border-radius: 4px;
-      margin-bottom: 15px;
-      font-size: 1.2rem;
-      font-weight: 500;
-      text-align: center;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      background: #ef5350;
+      color: #ffffff;
+      padding: 12px 40px 12px 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      font-weight: 400;
+      text-align: left;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       opacity: 0;
-      animation: fadeIn 0.5s ease-in forwards;
+      animation: fadeIn 0.4s ease-in forwards;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .error-message .close-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #ffffff;
+      font-size: 1.1rem;
+      transition: color 0.2s ease;
+    }
+
+    .error-message .close-btn:hover {
+      color: #ffebee;
     }
 
     @keyframes fadeIn {
       from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-8px);
       }
-
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
 
-    .login-card-container {
-      display: flex;
-      align-items: center;
-      min-height: 80vh;
+    .login-footer {
+      margin-top: 20px;
+      text-align: center;
+      color: #757575;
+      font-size: 0.8rem;
+      font-weight: 300;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 600px) {
+      .login-card {
+        padding: 30px 20px;
+        width: 95%;
+      }
+
+      .logo-img {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+      }
+
+      .logo-text {
+        font-size: 20px;
+      }
+
+      .logo-subtext {
+        font-size: 12px;
+      }
+
+      .input-field input[type="email"],
+      .input-field input[type="password"] {
+        height: 44px;
+      }
+
+      .btn-login {
+        height: 44px;
+      }
+    }
+
+    /* Accessibility Enhancements */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
     }
   </style>
 </head>
 
 <body>
   <div class="login-card z-depth-3">
-    <% if (message) { %>
-      <div class="error-message">
-        <%= message %>
+    <!-- Logo Section -->
+    <div class="logo-container">
+      <div class="logo-img">
+        <img src="../img/logo1.png" alt="">
       </div>
-      <% } %>
+      <div class="logo-text">Electro Store</div>
+      <div class="logo-subtext">Admin Portal</div>
+    </div>
 
+    <% if (message) { %>
+      <div class="error-message" role="alert">
+        <span><%= message %></span>
+        <span class="close-btn material-icons" onclick="this.parentElement.style.display='none'" aria-label="Close error message">close</span>
+      </div>
+    <% } %>
 
-        <form action="/admin/login" method="POST">
-          <div class="input-field">
-            <input id="email" type="email" name="email" required />
-            <label for="email">Email</label>
-          </div>
+    <form action="/admin/login" method="POST" aria-label="Admin Login Form">
+      <div class="input-field">
+        <input id="email" type="email" name="email" required aria-required="true" placeholder=" " />
+        <label for="email">Email</label>
+        <span class="sr-only">Email address</span>
+      </div>
 
-          <div class="input-field">
-            <input id="password" type="password" name="password" required />
-            <label for="password">Password</label>
-          </div>
+      <div class="input-field">
+        <input id="password" type="password" name="password" required aria-required="true" placeholder=" " />
+        <label for="password">Password</label>
+        <span class="sr-only">Password</span>
+      </div>
 
-          <button class="btn btn-login waves-effect waves-light" type="submit">
-            Login
-            <i class="material-icons right">lock_open</i>
-          </button>
-        </form>
+      <button class="btn btn-login waves-effect waves-light" type="submit" aria-label="Login Button">
+        Login
+        <i class="material-icons right">lock_open</i>
+      </button>
+    </form>
 
-        <div class="login-footer">
-          <p>© 2025 Your Company. All rights reserved.</p>
-        </div>
+    <div class="login-footer">
+      <p>© 2025 Electro Store. All rights reserved.</p>
+    </div>
   </div>
 
   <!-- Materialize JS -->

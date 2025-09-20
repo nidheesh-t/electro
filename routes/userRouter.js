@@ -2,20 +2,23 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/user/userController");
 const profileController = require("../controllers/user/profileController");
+const editProfileController =require("../controllers/user/editProfileController");
 const productController = require("../controllers/user/productController");
+const shopController = require("../controllers/user/shopController");
+const filterController = require("../controllers/user/filterController");
 const passport = require("../config/passport");
 const User = require("../models/userSchema");
 const Review = require("../models/reviewSchema");
 const mongoose = require("mongoose");
 
-router.get("/pageNotFound", userController.pageNotFound);
-router.get("/", userController.loadHomePage);
+router.get("/pageNotFound", shopController.pageNotFound);
+router.get("/", shopController.loadHomePage);
 
 // Product Routes
-router.get("/shop", userController.loadShoppingPage);
-router.get("/filter", userController.filterProducts);
-router.get("/filterPrice", userController.filterByPrice);
-router.post("/search", userController.searchProducts);
+router.get("/shop", shopController.loadShoppingPage);
+router.get("/filter", filterController.filterProducts);
+router.get("/filterPrice", filterController.filterByPrice);
+router.post("/search", filterController.searchProducts);
 router.get("/productDetails/:id", productController.productDetails);
 
 // Review Routes
@@ -44,29 +47,29 @@ router.post("/verify-otp", userController.verifyOtp);
 router.post("/resend-otp", userController.resendOtp);
 router.get("/auth/google", passport.authenticate("google", { scope: ["email", "profile"] }));
 router.get(
-    "/auth/google/callback",
-    passport.authenticate("google", { failureRedirect: "/login", failureMessage: true }),
-    (req, res) => {
-        req.session.user = req.user._id;
-        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        res.setHeader("Pragma", "no-cache");
-        res.setHeader("Expires", "0");
-        res.redirect("/");
-    }
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login", failureMessage: true }),
+  (req, res) => {
+    req.session.user = req.user._id;
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    res.redirect("/");
+  }
 );
 router.get("/check-session", async (req, res) => {
-    try {
-        if (req.session.user) {
-            const user = await User.findById(req.session.user);
-            if (user && !user.isBlock) {
-                return res.status(200).json({ valid: true });
-            }
-        }
-        return res.status(401).json({ valid: false });
-    } catch (error) {
-        console.error("Session check error:", error);
-        return res.status(500).json({ valid: false });
+  try {
+    if (req.session.user) {
+      const user = await User.findById(req.session.user);
+      if (user && !user.isBlock) {
+        return res.status(200).json({ valid: true });
+      }
     }
+    return res.status(401).json({ valid: false });
+  } catch (error) {
+    console.error("Session check error:", error);
+    return res.status(500).json({ valid: false });
+  }
 });
 router.get("/logout", userController.logout);
 
@@ -79,17 +82,17 @@ router.post('/resend-forgot-otp', profileController.resendOtp)
 router.post('/reset-password', profileController.postNewPassword)
 router.get('/userProfile', profileController.userProfile)
 
-router.get('/change-email', profileController.changeEmail)
-router.post('/change-email', profileController.changeEmailValid)
-router.post('/verify-email-otp', profileController.verifyEmailOtp)
-router.get('/new-email', profileController.getNewEmailPage)
-router.post("/update-email", profileController.updateEmail);
-router.post('/resend-email-otp', profileController.resendChangeEmailOtp)
-router.get('/change-password', profileController.changePassword)
-router.post('/change-password', profileController.changePasswordValid)
-router.post('/verify-change-pass-otp', profileController.verifyChangePassOtp)
-router.get('/reset-password-profile', profileController.getPassProfile)
-router.post('/reset-password-profile', profileController.postChangePassword)
+router.get('/change-email', editProfileController.changeEmail)
+router.post('/change-email', editProfileController.changeEmailValid)
+router.post('/verify-email-otp', editProfileController.verifyEmailOtp)
+router.get('/new-email', editProfileController.getNewEmailPage)
+router.post("/update-email", editProfileController.updateEmail);
+router.post('/resend-email-otp', editProfileController.resendChangeEmailOtp)
+router.get('/change-password', editProfileController.changePassword)
+router.post('/change-password', editProfileController.changePasswordValid)
+router.post('/verify-change-pass-otp', editProfileController.verifyChangePassOtp)
+router.get('/reset-password-profile', editProfileController.getPassProfile)
+router.post('/reset-password-profile', editProfileController.postChangePassword)
 
 router.post("/demo-login", userController.demoLogin);
 

@@ -1,7 +1,7 @@
 <%- include("../../views/partials/admin/header") %>
 
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     body {
@@ -140,6 +140,7 @@
     .badge.green {
       background-color: #27ae60;
     }
+
     #search-btn {
       margin: 10px 20px;
       font-size: 1rem;
@@ -150,7 +151,7 @@
 
     }
 
-    
+
 
     /* Responsive Styles */
     @media (max-width: 768px) {
@@ -193,11 +194,13 @@
         text-align: center;
       }
     }
+
     .btn-secondary {
       background-color: #aaa;
       color: white;
       font-weight: 600;
     }
+
     .btn-secondary:hover {
       background-color: #888;
     }
@@ -212,143 +215,147 @@
     }
   </style>
 
-  <div class="container mt-5">
+  <main class="container" style="margin-left: 270px; padding-top: 30px;">
+    <h4 class="center-align blue-text text-darken-2">Customer Management</h4>
 
-    <div class="content-header row mb-4">
-      <div class="d-flex justify-content-between align-items-center">
-        <h2 class="content-title card-title">Customers</h2>
+    <div class="row">
+
+      <!-- Search Form -->
+      <header class="text-center mb-4 search-form">
+        <form action="/admin/users" method="get" class="d-flex justify-content-center">
+          <div class="input-group input-group-sm" style="max-width: 500px;">
+            <input type="text" class="form-control rounded-start-pill" placeholder="Search customers..." name="search"
+              value="<%= search %>">
+            <button class="btn rounded-end-pill px-4" type="submit" id="search-btn">Search</button>
+            <% if (search) { %>
+              <a href="/admin/users" class="btn btn-secondary ms-2 rounded-pill px-4">Clear</a>
+              <% } %>
+          </div>
+        </form>
+
+      </header>
+
+      <!-- Customer Table -->
+      <div class="table-responsive">
+        <table class="table table-hover align-middle shadow-sm">
+          <thead>
+            <tr>
+              <th><b>#</b></th> <!-- Serial Number -->
+              <th><b>Name</b></th>
+              <th><b>Email</b></th>
+              <th><b>Phone No</b></th>
+              <th><b>Status</b></th>
+              <th><b>Actions</b></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for(let i=0; i < data.length; i++) { %>
+              <tr>
+                <td>
+                  <%= (currentPage - 1) * 5 + i + 1 %>
+                </td> <!-- Calculate serial number with pagination -->
+                <td>
+                  <%= data[i].firstName %>
+                    <%= data[i].lastName %>
+                </td>
+                <td>
+                  <%= data[i].email %>
+                </td>
+                <td>
+                  <%= data[i].phone %>
+                </td>
+                <td>
+                  <% if(data[i].isBlock) { %>
+                    <span class="badge red white-text">Blocked</span>
+                    <% } else { %>
+                      <span class="badge green white-text">Active</span>
+                      <% } %>
+                </td>
+                <td class="d-flex gap-2">
+
+                  <% if(!data[i].isBlock) { %>
+                    <button class="btn btn-danger btn-sm" onclick="confirmBlock('<%= data[i]._id %>')">Block</button>
+
+                    <% } else { %>
+                      <button class="btn btn-success btn-sm"
+                        onclick="confirmUnblock('<%= data[i]._id %>')">Unblock</button>
+
+                      <% } %>
+                        <a href="/admin/editCustomer/<%= data[i]._id %>" class="btn btn-edit btn-sm">Edit</a>
+                </td>
+              </tr>
+              <% } %>
+          </tbody>
+        </table>
+      </div>
+      <br>
+
+      <!-- Pagination -->
+      <!-- Pagination Below the Table -->
+      <div class="center-align">
+        <ul class="pagination">
+          <% if (currentPage> 1) { %>
+            <li class="waves-effect"><a href="?page=<%= currentPage - 1 %>"><i
+                  class="material-icons">chevron_left</i></a></li>
+            <% } else { %>
+              <li class="disabled"><a><i class="material-icons">chevron_left</i></a></li>
+              <% } %>
+
+                <% for (let i=1; i <=totalPages; i++) { %>
+                  <li class="<%= i === currentPage ? 'active blue' : 'waves-effect' %>">
+                    <a href="?page=<%= i %>">
+                      <%= i %>
+                    </a>
+                  </li>
+                  <% } %>
+
+                    <% if (currentPage < totalPages) { %>
+                      <li class="waves-effect"><a href="?page=<%= currentPage + 1 %>"><i
+                            class="material-icons">chevron_right</i></a></li>
+                      <% } else { %>
+                        <li class="disabled"><a><i class="material-icons">chevron_right</i></a></li>
+                        <% } %>
+        </ul>
       </div>
     </div>
+  </main>
 
-    <!-- Search Form -->
-    <header class="text-center mb-4 search-form">
-      <form action="/admin/users" method="get" class="d-flex justify-content-center">
-        <div class="input-group input-group-sm" style="max-width: 500px;">
-          <input type="text" class="form-control rounded-start-pill" placeholder="Search customers..." name="search" value="<%= search %>">
-          <button class="btn rounded-end-pill px-4" type="submit" id="search-btn">Search</button>
-          <% if (search) { %>
-            <a href="/admin/users" class="btn btn-secondary ms-2 rounded-pill px-4">Clear</a>
-          <% } %>
-        </div>
-      </form>
-
-    </header>
-
-    <!-- Customer Table -->
-    <div class="table-responsive">
-      <table class="table table-hover align-middle shadow-sm">
-        <thead>
-          <tr>
-            <th><b>#</b></th> <!-- Serial Number -->
-            <th><b>Name</b></th>
-            <th><b>Email</b></th>
-            <th><b>Phone No</b></th>
-            <th><b>Status</b></th>
-            <th><b>Actions</b></th>
-          </tr>
-        </thead>
-        <tbody>
-          <% for(let i=0; i < data.length; i++) { %>
-            <tr>
-              <td>
-                <%= (currentPage - 1) * 5 + i + 1 %>
-              </td> <!-- Calculate serial number with pagination -->
-              <td>
-                <%= data[i].firstName %> <%= data[i].lastName %> 
-              </td>
-              <td>
-                <%= data[i].email %>
-              </td>
-              <td>
-                <%= data[i].phone %>
-              </td>
-              <td>
-                <% if(data[i].isBlock) { %>
-                  <span class="badge red white-text">Blocked</span>
-                  <% } else { %>
-                    <span class="badge green white-text">Active</span>
-                    <% } %>
-              </td>
-              <td class="d-flex gap-2">
-
-                <% if(!data[i].isBlock) { %>
-                  <button class="btn btn-danger btn-sm" onclick="confirmBlock('<%= data[i]._id %>')">Block</button>
-
-                  <% } else { %>
-                    <button class="btn btn-success btn-sm" onclick="confirmUnblock('<%= data[i]._id %>')">Unblock</button>
-
-                    <% } %>
-                      <a href="/admin/editCustomer/<%= data[i]._id %>" class="btn btn-edit btn-sm">Edit</a>
-              </td>
-            </tr>
-            <% } %>
-        </tbody>
-      </table>
-    </div>
-    <br>
-
-    <!-- Pagination -->
-    <!-- Pagination Below the Table -->
-    <div class="center-align">
-      <ul class="pagination">
-        <% if (currentPage > 1) { %>
-          <li class="waves-effect"><a href="?page=<%= currentPage - 1 %>"><i class="material-icons">chevron_left</i></a></li>
-        <% } else { %>
-          <li class="disabled"><a><i class="material-icons">chevron_left</i></a></li>
-        <% } %>
-
-        <% for (let i = 1; i <= totalPages; i++) { %>
-          <li class="<%= i === currentPage ? 'active blue' : 'waves-effect' %>">
-            <a href="?page=<%= i %>"><%= i %></a>
-          </li>
-        <% } %>
-
-        <% if (currentPage < totalPages) { %>
-          <li class="waves-effect"><a href="?page=<%= currentPage + 1 %>"><i class="material-icons">chevron_right</i></a></li>
-        <% } else { %>
-          <li class="disabled"><a><i class="material-icons">chevron_right</i></a></li>
-        <% } %>
-      </ul>
-    </div>
-
-  </div>
-  
   <script>
-  function confirmBlock(userId) {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: "You want to block this user!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#aaa',
-      confirmButtonText: 'Yes, block!'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const search = new URLSearchParams(window.location.search).get("search") || "";
-        const page = new URLSearchParams(window.location.search).get("page") || 1;
-        window.location.href = `/admin/blockCustomer?id=${userId}&page=${page}&search=${search}`;
-      }
-    });
-  }
+    function confirmBlock(userId) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You want to block this user!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: 'Yes, block!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const search = new URLSearchParams(window.location.search).get("search") || "";
+          const page = new URLSearchParams(window.location.search).get("page") || 1;
+          window.location.href = `/admin/blockCustomer?id=${userId}&page=${page}&search=${search}`;
+        }
+      });
+    }
 
-  function confirmUnblock(userId) {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: "You want to unblock this user!",
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#28a745',
-      cancelButtonColor: '#aaa',
-      confirmButtonText: 'Yes, unblock!'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const search = new URLSearchParams(window.location.search).get("search") || "";
-        const page = new URLSearchParams(window.location.search).get("page") || 1;
-        window.location.href = `/admin/unblockCustomer?id=${userId}&page=${page}&search=${search}`;
-      }
-    });
-  }
-</script>
+    function confirmUnblock(userId) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You want to unblock this user!",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: 'Yes, unblock!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const search = new URLSearchParams(window.location.search).get("search") || "";
+          const page = new URLSearchParams(window.location.search).get("page") || 1;
+          window.location.href = `/admin/unblockCustomer?id=${userId}&page=${page}&search=${search}`;
+        }
+      });
+    }
+  </script>
 
   <%- include("../../views/partials/admin/footer") %>
