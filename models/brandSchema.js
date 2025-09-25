@@ -9,8 +9,14 @@ const brandSchema = new Schema({
         trim: true
     },
     brandLogo: {
-        type: String,
-        default: null
+        public_id: {
+            type: String,
+            default: null
+        },
+        url: {
+            type: String,
+            default: null
+        }
     },
     isListed: {
         type: Boolean,
@@ -21,7 +27,6 @@ const brandSchema = new Schema({
         default: false
     }
 }, { timestamps: true });
-
 
 const Brand = mongoose.model("Brand", brandSchema);
 module.exports = Brand;

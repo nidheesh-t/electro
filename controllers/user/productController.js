@@ -94,15 +94,11 @@ const productDetails = async (req, res) => {
 
 const submitReview = async (req, res) => {
   try {
-    const { productId, rating, comment, userId } = req.body;
-    const sessionUserId = req.session.user;
+    const { productId, rating, comment } = req.body;
+    const userId = req.session.user; // Get userId from session
 
-    if (!sessionUserId) {
+    if (!userId) {
       return res.status(401).json({ success: false, message: 'Please login to submit a review' });
-    }
-
-    if (userId !== sessionUserId.toString()) {
-      return res.status(403).json({ success: false, message: 'Unauthorized user' });
     }
 
     if (!productId || !rating || !comment) {
@@ -143,9 +139,18 @@ const submitReview = async (req, res) => {
     await review.save();
     await Product.findByIdAndUpdate(productId, { $push: { review: review._id } });
 
+    // Calculate new average rating
+    const averageRatingResult = await Review.aggregate([
+      { $match: { product: new mongoose.Types.ObjectId(productId) } },
+      { $group: { _id: null, average: { $avg: '$rating' } } }
+    ]);
+
+    const newAverageRating = averageRatingResult[0]?.average || 0;
+
     res.json({
       success: true,
       message: 'Review submitted successfully',
+      newAverageRating: newAverageRating,
       review: {
         _id: review._id,
         rating: review.rating,
@@ -162,8 +167,7 @@ const submitReview = async (req, res) => {
     console.error('Error submitting review:', error);
     res.status(500).json({ success: false, message: 'Failed to submit review' });
   }
-};
-
+}
 
 
 

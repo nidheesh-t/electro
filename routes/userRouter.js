@@ -22,7 +22,7 @@ router.post("/search", filterController.searchProducts);
 router.get("/productDetails/:id", productController.productDetails);
 
 // Review Routes
-router.post("/submit", productController.submitReview);
+router.post("/reviews/submit", productController.submitReview);
 router.get("/api/reviews/average/:productId", async (req, res) => {
   try {
     const productId = req.params.productId;
@@ -35,7 +35,7 @@ router.get("/api/reviews/average/:productId", async (req, res) => {
     console.error('Error fetching average rating:', error);
     res.status(500).json({ average: 0 });
   }
-})
+});
 
 
 // Authentication Routes

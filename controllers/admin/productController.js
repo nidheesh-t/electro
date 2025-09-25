@@ -2,9 +2,7 @@ const mongoose = require("mongoose");
 const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const Brand = require("../../models/brandSchema");
-const fs = require("fs");
-const path = require("path");
-const sharp = require("sharp");
+const { cloudinaryRemoveImage, cloudinaryRemoveMultipleImage } = require('../../helpers/uploadMiddleware');
 const sanitizeHtml = require('sanitize-html');
 
 const handleError = (res, error, redirectPath = "/pageerror") => {
@@ -37,6 +35,10 @@ const addProducts = async (req, res) => {
             variants
         } = req.body;
 
+        // console.log('Request body:', req.body);
+        // console.log('Cloudinary results:', req.cloudinaryResults);
+        // console.log('Files:', req.files);
+
         const sanitizedProductName = sanitizeHtml(productName.trim().toLowerCase());
         const sanitizedDescription = sanitizeHtml(description);
 
@@ -61,15 +63,31 @@ const addProducts = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid or unlisted category." });
         }
 
-        let parsedVariants = Array.isArray(variants) ? variants : [variants];
+        // Parse variants data
+        let parsedVariants;
+        try {
+            if (typeof variants === 'string') {
+                parsedVariants = JSON.parse(variants);
+            } else {
+                parsedVariants = Array.isArray(variants) ? variants : [variants];
+            }
+        } catch (error) {
+            console.error('Error parsing variants:', error);
+            return res.status(400).json({ success: false, message: "Invalid variant data format" });
+        }
+
         parsedVariants = parsedVariants.map(variant => {
-            const specs = Array.isArray(variant.specs) ? variant.specs : [variant.specs];
+            // Handle different variant data structures
+            const specs = Array.isArray(variant.specs) ? variant.specs : 
+                         (variant.specs && typeof variant.specs === 'object') ? [variant.specs] : [];
+            
             const quantity = parseInt(variant.quantity) || 0;
             if (quantity < 0) {
                 throw new Error("Quantity cannot be negative");
             }
+            
             return {
-                specs: specs.filter(spec => spec.name && spec.value.trim()).map(spec => ({
+                specs: specs.filter(spec => spec && spec.name && spec.value && spec.name.trim() && spec.value.trim()).map(spec => ({
                     name: sanitizeHtml(spec.name.trim()),
                     value: sanitizeHtml(spec.value.trim())
                 })),
@@ -92,21 +110,20 @@ const addProducts = async (req, res) => {
             }
         }
 
-        const images = [];
-        if (req.files?.length > 0) {
-            if (req.files.length > 4) {
-                return res.status(400).json({ success: false, message: `Maximum 4 images allowed. You uploaded ${req.files.length}.` });
-            }
-            for (let file of req.files) {
-                const resizedPath = path.join("public", "uploads", "product-images", file.filename);
-                await sharp(file.path).resize(440, 440).toFile(resizedPath);
-                images.push(file.filename);
-                // console.log(`Saved image: ${resizedPath}`);
-            }
-        }
+        // Cloudinary images data - FIXED: Use req.cloudinaryResults instead of req.files
+        const images = req.cloudinaryResults ? req.cloudinaryResults.map(img => ({
+            public_id: img.public_id,
+            url: img.url
+        })) : [];
+
+        // console.log('Processed images:', images);
 
         if (images.length === 0) {
-            return res.status(400).json({ success: false, message: "Product must have 1 to 4 images" });
+            return res.status(400).json({ success: false, message: "Product must have at least one image" });
+        }
+
+        if (images.length > 4) {
+            return res.status(400).json({ success: false, message: "Product cannot have more than 4 images" });
         }
 
         const newProduct = new Product({
@@ -118,11 +135,11 @@ const addProducts = async (req, res) => {
             salePrice,
             variants: parsedVariants,
             productImage: images,
-            totalQuantity: 0
+            totalQuantity: parsedVariants.reduce((sum, variant) => sum + (variant.quantity || 0), 0)
         });
 
         await newProduct.save();
-        // console.log(`Product saved with images: ${images}`);
+        // console.log('Product saved successfully with ID:', newProduct._id);
 
         res.status(200).json({
             success: true,
@@ -137,8 +154,6 @@ const addProducts = async (req, res) => {
         });
     }
 };
-
-
 
 const getAllProducts = async (req, res) => {
     try {
@@ -188,9 +203,8 @@ const getAllProducts = async (req, res) => {
     }
 }
 
-
 module.exports = {
     getProductAddPage,
     addProducts,
     getAllProducts
-};
+}

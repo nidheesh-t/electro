@@ -82,16 +82,15 @@
                                     <tbody>
                                         <% if (data && Array.isArray(data) && data.length> 0) { %>
                                             <% data.forEach((product, index)=> { %>
-                                                <tr>
+                                                <tr data-product-id="<%= product._id %>">
                                                     <td>
-                                                        <% if (product.productImage && product.productImage.length> 0) {
-                                                            %>
-                                                            <img src="/uploads/product-images/<%= product.productImage[0] %>"
+                                                        <% if (product.productImage && product.productImage.length> 0 && product.productImage[0].url) { %>
+                                                            <img src="<%= product.productImage[0].url %>"
                                                                 alt="Product Image"
                                                                 style="width:50px; height:50px; object-fit:cover;"
-                                                                onerror="this.src='/Uploads/product-images/placeholder.jpg'">
+                                                                onerror="this.src='/uploads/placeholder.jpg'">
                                                             <% } else { %>
-                                                                <img src="/Uploads/product-images/placeholder.jpg"
+                                                                <img src="/uploads/placeholder.jpg"
                                                                     alt="No Image"
                                                                     style="width:50px; height:50px; object-fit:cover;">
                                                                 <% } %>
@@ -107,15 +106,18 @@
                                                         <%= product.category && product.category.categoryName ?
                                                             product.category.categoryName : 'N/A' %>
                                                     </td>
-                                                    <td>₹<%= product.regularPrice ? product.regularPrice : '0' %>
+                                                    <td>₹<%= product.regularPrice ? product.regularPrice.toLocaleString() : '0' %>
                                                     </td>
-                                                    <td>₹<%= product.salePrice ? product.salePrice : '0' %>
-                                                    </td>
-                                                    <td>
-                                                        <%= product.totalQuantity ? product.totalQuantity : '0' %>
+                                                    <td>₹<%= product.salePrice ? product.salePrice.toLocaleString() : '0' %>
                                                     </td>
                                                     <td>
-                                                        <%= product.status ? product.status : 'N/A' %>
+                                                        <%= product.totalQuantity ? product.totalQuantity.toLocaleString() : '0' %>
+                                                    </td>
+                                                    <td>
+                                                        <span class="new badge 
+                                                            <%= product.status === 'Available' ? 'green' : product.status === 'Out of Stock' ? 'red' : 'grey' %>"
+                                                            data-badge-caption="<%= product.status ? product.status : 'N/A' %>">
+                                                        </span>
                                                     </td>
                                                     <td>
                                                         <% if(product.isListed) { %>
@@ -127,63 +129,80 @@
                                                                 <% } %>
                                                     </td>
                                                     <td>
-                                                        <% if(product.isListed) { %>
-                                                            <button
-                                                                onclick="toggleProductListing('<%= product._id %>', false)"
-                                                                class="btn waves-effect waves-light red lighten-1 btn-small">Unlist</button>
-                                                            <% } else { %>
+                                                        <div class="action-buttons" style="display: flex; flex-direction: column; gap: 5px;">
+                                                            <% if(product.isListed) { %>
                                                                 <button
-                                                                    onclick="toggleProductListing('<%= product._id %>', true)"
-                                                                    class="btn waves-effect waves-light green lighten-1 btn-small">List</button>
-                                                                <% } %>
-                                                                    <a href="/admin/editProduct?id=<%= product._id %>"
-                                                                        class="btn waves-effect waves-light blue lighten-1 btn-small">Edit</a>
-                                                                    <a href="javascript:void(0);"
-                                                                        class="btn waves-effect waves-light orange lighten-1 btn-small"
-                                                                        onclick="confirmDelete('<%= product._id %>')">Delete</a>
+                                                                    onclick="toggleProductListing('<%= product._id %>', false)"
+                                                                    class="btn waves-effect waves-light red lighten-1 btn-small"
+                                                                    style="margin: 2px 0;">
+                                                                    <i class="material-icons tiny">visibility_off</i> Unlist
+                                                                </button>
+                                                                <% } else { %>
+                                                                    <button
+                                                                        onclick="toggleProductListing('<%= product._id %>', true)"
+                                                                        class="btn waves-effect waves-light green lighten-1 btn-small"
+                                                                        style="margin: 2px 0;">
+                                                                        <i class="material-icons tiny">visibility</i> List
+                                                                    </button>
+                                                                    <% } %>
+                                                                        <a href="/admin/editProduct?id=<%= product._id %>"
+                                                                            class="btn waves-effect waves-light blue lighten-1 btn-small"
+                                                                            style="margin: 2px 0;">
+                                                                            <i class="material-icons tiny">edit</i> Edit
+                                                                        </a>
+                                                                        <button onclick="confirmDelete('<%= product._id %>')"
+                                                                            class="btn waves-effect waves-light orange lighten-1 btn-small"
+                                                                            style="margin: 2px 0;">
+                                                                            <i class="material-icons tiny">delete</i> Delete
+                                                                        </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                                 <% }) %>
                                                     <% } else { %>
                                                         <tr>
-                                                            <td colspan="11" class="center-align">No products found</td>
+                                                            <td colspan="10" class="center-align">No products found</td>
                                                         </tr>
                                                         <% } %>
                                     </tbody>
                                 </table>
                             </div>
 
-                            <div class="center-align">
-                                <ul class="pagination">
-                                    <% if (currentPage> 1) { %>
-                                        <li class="waves-effect">
-                                            <a href="?page=<%= currentPage - 1 %>&search=<%= search || '' %>">«
-                                                Previous</a>
-                                        </li>
-                                        <% } else { %>
-                                            <li class="disabled"><a>« Previous</a></li>
-                                            <% } %>
+                            <!-- Pagination -->
+                            <% if (totalPages > 1) { %>
+                                <div class="center-align">
+                                    <ul class="pagination">
+                                        <% if (currentPage> 1) { %>
+                                            <li class="waves-effect">
+                                                <a href="?page=<%= currentPage - 1 %>&search=<%= search || '' %>">
+                                                    <i class="material-icons">chevron_left</i>
+                                                </a>
+                                            </li>
+                                            <% } else { %>
+                                                <li class="disabled"><a><i class="material-icons">chevron_left</i></a></li>
+                                                <% } %>
 
-                                                <% for (let i=1; i <=totalPages; i++) { %>
-                                                    <li
-                                                        class="<%= i === currentPage ? 'active blue' : 'waves-effect' %>">
-                                                        <a href="?page=<%= i %>&search=<%= search || '' %>">
-                                                            <%= i %>
-                                                        </a>
-                                                    </li>
-                                                    <% } %>
+                                                    <% for (let i=1; i <=totalPages; i++) { %>
+                                                        <li
+                                                            class="<%= i === currentPage ? 'active blue' : 'waves-effect' %>">
+                                                            <a href="?page=<%= i %>&search=<%= search || '' %>">
+                                                                <%= i %>
+                                                            </a>
+                                                        </li>
+                                                        <% } %>
 
-                                                        <% if (currentPage < totalPages) { %>
-                                                            <li class="waves-effect">
-                                                                <a
-                                                                    href="?page=<%= currentPage + 1 %>&search=<%= search || '' %>">Next
-                                                                    »</a>
-                                                            </li>
-                                                            <% } else { %>
-                                                                <li class="disabled"><a>Next »</a></li>
-                                                                <% } %>
-                                </ul>
-                            </div>
+                                                            <% if (currentPage < totalPages) { %>
+                                                                <li class="waves-effect">
+                                                                    <a href="?page=<%= currentPage + 1 %>&search=<%= search || '' %>">
+                                                                        <i class="material-icons">chevron_right</i>
+                                                                    </a>
+                                                                </li>
+                                                                <% } else { %>
+                                                                    <li class="disabled"><a><i class="material-icons">chevron_right</i></a></li>
+                                                                    <% } %>
+                                    </ul>
+                                </div>
+                                <% } %>
                         </div>
                     </div>
                 </div>
@@ -191,26 +210,45 @@
         </div>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
     <script>
+        // Initialize Materialize components
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips
+            const tooltips = document.querySelectorAll('.tooltipped');
+            M.Tooltip.init(tooltips);
+        });
+
         function confirmDelete(productId) {
             Swal.fire({
                 title: "Are you sure?",
-                text: "This will soft-delete the product.",
+                text: "This will delete the product permanently.",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#d33",
                 cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, delete it!"
+                confirmButtonText: "Yes, delete it!",
+                cancelButtonText: "Cancel"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    Swal.fire({ title: 'Deleting...', text: 'Please wait', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                    // Show loading indicator
+                    Swal.fire({
+                        title: 'Deleting...',
+                        text: 'Please wait',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Redirect to delete endpoint
                     window.location.href = `/admin/deleteProduct?id=${productId}`;
                 }
             });
         }
+
         function toggleProductListing(productId, list) {
             Swal.fire({
                 title: `Are you sure?`,
@@ -219,9 +257,11 @@
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: `Yes, ${list ? 'list' : 'unlist'} it!`
+                confirmButtonText: `Yes, ${list ? 'list' : 'unlist'} it!`,
+                cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // Show loading indicator
                     Swal.fire({
                         title: `${list ? 'Listing' : 'Unlisting'}...`,
                         text: 'Please wait',
@@ -238,68 +278,109 @@
                             'Content-Type': 'application/json'
                         }
                     })
-                        .then(response => response.json())
-                        .then(data => {
-                            Swal.close();
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Success!',
-                                    text: data.message,
-                                    icon: 'success',
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                }).then(() => {
-                                    // Update the UI dynamically
-                                    const row = document.querySelector(`tr[data-product-id="${productId}"]`);
-                                    const statusCell = row.cells[8]; // Listed/Unlisted column
-                                    const actionCell = row.cells[9]; // Actions column
-
-                                    // Update Listed/Unlisted badge
-                                    statusCell.innerHTML = list
-                                        ? '<span class="new badge green" data-badge-caption="Listed"></span>'
-                                        : '<span class="new badge red" data-badge-caption="Unlisted"></span>';
-
-                                    // Update List/Unlist button
-                                    actionCell.innerHTML = `
-                                ${list
-                                            ? `<button onclick="toggleProductListing('${productId}', false)" class="btn waves-effect waves-light red lighten-1 btn-small">Unlist</button>`
-                                            : `<button onclick="toggleProductListing('${productId}', true)" class="btn waves-effect waves-light green lighten-1 btn-small">List</button>`}
-                                <a href="/admin/editProduct?id=${productId}" class="btn waves-effect waves-light blue lighten-1 btn-small">Edit</a>
-                                <a href="javascript:void(0);" class="btn waves-effect waves-light orange lighten-1 btn-small" onclick="confirmDelete('${productId}')">Delete</a>
-                            `;
-                                });
-                            } else {
-                                Swal.fire({
-                                    title: 'Error!',
-                                    text: 'Something went wrong.',
-                                    icon: 'error',
-                                    timer: 2000,
-                                    showConfirmButton: false
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            Swal.close();
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        Swal.close();
+                        
+                        if (data.success) {
+                            // Show success message
                             Swal.fire({
-                                title: 'Error!',
-                                text: 'Failed to process the request.',
-                                icon: 'error',
-                                timer: 2000,
+                                title: 'Success!',
+                                text: data.message,
+                                icon: 'success',
+                                timer: 1500,
                                 showConfirmButton: false
+                            }).then(() => {
+                                // Reload the page to reflect changes
+                                window.location.reload();
                             });
+                        } else {
+                            throw new Error(data.message || 'Operation failed');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.close();
+                        Swal.fire({
+                            title: 'Error!',
+                            text: error.message || 'Failed to process the request.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
                         });
+                    });
                 }
             });
         }
 
-        // Ensure each table row has a data-product-id attribute for easy selection
-        document.addEventListener('DOMContentLoaded', () => {
+        // Add row hover effects
+        document.addEventListener('DOMContentLoaded', function() {
             const rows = document.querySelectorAll('tbody tr');
             rows.forEach(row => {
-                const productId = row.querySelector('td button, td a').getAttribute('onclick').match(/'([^']+)'/)[1];
-                row.setAttribute('data-product-id', productId);
+                row.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#f5f5f5';
+                });
+                row.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = '';
+                });
             });
+        });
+
+        // Enhanced search functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search');
+            if (searchInput) {
+                // Clear search when Escape key is pressed
+                searchInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        this.value = '';
+                        this.form.submit();
+                    }
+                });
+            }
         });
     </script>
 
-    <%- include("../../views/partials/admin/footer") %>
+    <style>
+        .action-buttons .btn {
+            width: 100%;
+            height: 32px;
+            line-height: 32px;
+            padding: 0 8px;
+        }
+        
+        .action-buttons .btn i.material-icons {
+            font-size: 14px;
+            margin-right: 4px;
+        }
+        
+        .responsive-table {
+            overflow-x: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: row !important;
+                flex-wrap: wrap;
+            }
+            
+            .action-buttons .btn {
+                flex: 1;
+                min-width: 60px;
+                margin: 2px;
+            }
+            
+            .action-buttons .btn i.material-icons {
+                margin-right: 0;
+            }
+            
+            .action-buttons .btn span {
+                display: none;
+            }
+        }
+    </style>
+
+<%- include("../../views/partials/admin/footer") %>

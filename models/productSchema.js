@@ -1,3 +1,4 @@
+// models/productSchema.js
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
@@ -58,10 +59,16 @@ const productSchema = new Schema({
         default: 0,
         min: [0, "Total quantity cannot be negative"]
     },
-    productImage: {
-        type: [String],
-        required: true
-    },
+    productImage: [{
+        public_id: {
+            type: String,
+            required: true
+        },
+        url: {
+            type: String,
+            required: true
+        }
+    }],
     isListed: {
         type: Boolean,
         default: true

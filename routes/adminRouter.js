@@ -1,4 +1,4 @@
-// adminRouter.js
+// routes/adminRouter.js
 const express = require("express");
 const router = express.Router();
 const adminController = require('../controllers/admin/adminController');
@@ -6,10 +6,13 @@ const customerController = require('../controllers/admin/customerController');
 const categoryController = require('../controllers/admin/categoryController');
 const brandController = require('../controllers/admin/brandController');
 const productController = require('../controllers/admin/productController');
-const editProductController = require("../controllers/admin/editProductController")
-const multer = require('multer');
-const storage = require('../helpers/multer');
-const uploads = multer({ storage: storage });
+const editProductController = require("../controllers/admin/editProductController");
+
+// Import the new upload middleware
+const { 
+    uploadToCloudinary, 
+    uploadMultipleToCloudinary 
+} = require('../helpers/uploadMiddleware');
 
 router.get('/login', adminController.loadLogin);
 router.post('/login', adminController.login);
@@ -32,23 +35,23 @@ router.get('/editCategory/:id', categoryController.getEditCategory);
 router.post('/editCategory/:id', categoryController.editCategory);
 router.get('/deleteCategory', categoryController.softDeleteCategory);
 
-// Brand management
+// Brand management - Updated to use Cloudinary
 router.get('/brands', brandController.getBrandPage);
-router.post('/addBrand', uploads.single("image"), brandController.addBrand);
+router.post('/addBrand', uploadToCloudinary("image"), brandController.addBrand);
 router.get("/unlistBrand", brandController.unlistBrand);
 router.get("/listBrand", brandController.listBrand);
 router.get("/deleteBrand", brandController.deleteBrand);
 router.get("/editBrand", brandController.getEditBrand);
-router.post("/editBrand", uploads.single("image"), brandController.postEditBrand);
+router.post("/editBrand", uploadToCloudinary("image"), brandController.postEditBrand);
 
-// Product Management Routes
+// Product Management Routes - Updated to use Cloudinary
 router.get("/addProducts", productController.getProductAddPage);
-router.post("/addProducts", uploads.array("images", 4), productController.addProducts);
+router.post("/addProducts", uploadMultipleToCloudinary("images", 4), productController.addProducts);
 router.get("/products", productController.getAllProducts);
 router.get("/listProduct", editProductController.listProduct);
 router.get("/unlistProduct", editProductController.unlistProduct);
 router.get("/editProduct", editProductController.getEditProduct);
-router.post("/editProduct/:id", uploads.array("images", 4), editProductController.editProduct);
+router.post("/editProduct/:id", uploadMultipleToCloudinary("images", 4), editProductController.editProduct);
 router.get("/deleteProduct", editProductController.deleteProduct);
 router.post("/deleteSingleImage", editProductController.deleteSingleImage);
 

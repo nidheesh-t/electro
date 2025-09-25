@@ -97,8 +97,7 @@
                                             <%= brand.brandName %>
                                         </td>
                                         <td>
-                                            <img src="/uploads/re-image/<%= brand.brandLogo %>"
-                                                alt="<%= brand.brandName %>" class="brand-image">
+                                            <img src="<%= brand.brandLogo.url %>" alt="<%= brand.brandName %>" class="brand-image">
                                         </td>
                                         <td>
                                             <span class="new badge <%= brand.isListed ? 'green' : 'red' %>"

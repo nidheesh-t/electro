@@ -10,10 +10,11 @@
     h6 { margin-top: 20px; }
     .btn { margin: 5px; }
     .variant-field {
-        border: 1px solid #000000;
+        border: 1px solid #e0e0e0;
         padding: 15px;
         margin-bottom: 15px;
         border-radius: 5px;
+        background-color: #fafafa;
     }
     .variant-field::before {
         content: "Variant " counter(variant-counter);
@@ -26,6 +27,46 @@
     #variant-fields {
         counter-reset: variant-counter;
     }
+    .image-preview-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .preview-image {
+        position: relative;
+        border: 2px solid #e0e0e0;
+        border-radius: 5px;
+        padding: 5px;
+    }
+    .preview-image img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+    }
+    .remove-image {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #f44336;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+    }
+    .cropping-section {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 15px;
+    }
+    .cropper-container {
+        max-width: 100%;
+        margin-bottom: 10px;
+    }
 </style>
 
 <main>
@@ -35,508 +76,762 @@
         </div>
 
         <div class="row">
-            <div class="col s12 m8 offset-m2">
+            <div class="col s12 m10 offset-m1">
                 <div class="card">
                     <div class="card-content">
                         <span class="card-title">Product Details</span>
 
-                        <form id="addProductForm" onsubmit="return handleFormSubmit(event)" enctype="multipart/form-data">
+                        <form id="addProductForm" enctype="multipart/form-data">
+                            <!-- Basic Information Section -->
                             <div class="row" style="margin-bottom: 20px;">
                                 <div class="col s12">
                                     <h6>Basic Information <i class="material-icons tooltipped" data-position="right" data-tooltip="Enter the product's name, brand, and description">info</i></h6>
+                                    
                                     <div class="input-field">
-                                        <input id="product_name" name="productName" type="text" required />
-                                        <label for="product_name">Product Name</label>
-                                        <span id="name-error" class="red-text text-darken-2"></span>
+                                        <input id="product_name" name="productName" type="text" class="validate" required />
+                                        <label for="product_name">Product Name *</label>
+                                        <span class="helper-text" data-error="Product name is required"></span>
                                     </div>
 
                                     <div class="input-field">
                                         <select name="brand" id="brand" required>
-                                            <option value="" disabled selected>Choose Brand</option>
+                                            <option value="" disabled selected>Choose Brand *</option>
                                             <% brands.forEach(brand => { %>
                                                 <option value="<%= brand._id %>"><%= brand.brandName %></option>
                                             <% }) %>
                                         </select>
-                                        <label for="brand">Brand</label>
-                                        <span id="brand-error" class="red-text text-darken-2"></span>
+                                        <label for="brand">Brand *</label>
                                     </div>
 
                                     <div class="input-field">
-                                        <textarea id="description" name="description" class="materialize-textarea" required></textarea>
-                                        <label for="description">Description</label>
-                                        <span id="description-error" class="red-text text-darken-2"></span>
+                                        <textarea id="description" name="description" class="materialize-textarea validate" required></textarea>
+                                        <label for="description">Description *</label>
+                                        <span class="helper-text" data-error="Description is required"></span>
                                     </div>
                                 </div>
                             </div>
 
+                            <!-- Pricing & Category Section -->
                             <div class="row" style="margin-bottom: 20px;">
                                 <div class="col s12">
                                     <h6>Pricing & Category <i class="material-icons tooltipped" data-position="right" data-tooltip="Select category and set pricing details">info</i></h6>
+                                    
                                     <div class="input-field">
                                         <select name="category" id="category" required>
-                                            <option value="" disabled selected>Choose Category</option>
+                                            <option value="" disabled selected>Choose Category *</option>
                                             <% categories.forEach(category => { %>
                                                 <option value="<%= category._id %>"><%= category.categoryName %></option>
                                             <% }) %>
                                         </select>
-                                        <label for="category">Category</label>
-                                        <span id="category-error" class="red-text text-darken-2"></span>
+                                        <label for="category">Category *</label>
                                     </div>
 
                                     <div class="row">
                                         <div class="col s12 m6">
                                             <div class="input-field">
-                                                <input id="regular_price" name="regularPrice" type="number" step="0.01" required />
-                                                <label for="regular_price">Regular Price ($)</label>
-                                                <span id="regular-price-error" class="red-text text-darken-2"></span>
+                                                <input id="regular_price" name="regularPrice" type="number" step="0.01" min="0" class="validate" required />
+                                                <label for="regular_price">Regular Price (₹) *</label>
+                                                <span class="helper-text" data-error="Valid regular price is required"></span>
                                             </div>
                                         </div>
                                         <div class="col s12 m6">
                                             <div class="input-field">
-                                                <input id="sale_price" name="salePrice" type="number" step="0.01" required />
-                                                <label for="sale_price">Sale Price ($)</label>
-                                                <span id="sale-price-error" class="red-text text-darken-2"></span>
+                                                <input id="sale_price" name="salePrice" type="number" step="0.01" min="0" class="validate" required />
+                                                <label for="sale_price">Sale Price (₹) *</label>
+                                                <span class="helper-text" data-error="Valid sale price is required"></span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
+                            <!-- Variants Section -->
                             <div id="variants-container" style="margin-bottom: 20px;">
-                                <h6>Variants <i class="material-icons tooltipped" data-position="right" data-tooltip="Add different versions of the product (e.g., size, color)">info</i></h6>
+                                <h6>Product Variants <i class="material-icons tooltipped" data-position="right" data-tooltip="Add different versions of the product (e.g., size, color)">info</i></h6>
                                 <div id="variant-fields">
                                     <div class="variant-field">
                                         <div class="row">
                                             <div class="col s12">
+                                                <h7><strong>Specifications</strong></h7>
                                                 <div class="attribute-fields">
                                                     <div class="attribute-field">
                                                         <div class="row">
                                                             <div class="col s5">
-                                                                <input type="text" name="variants[0][specs][0][name]" required />
-                                                                <label>Specification</label>
-                                                                <span class="error red-text text-darken-2"></span>
+                                                                <input type="text" name="variants[0][specs][0][name]" placeholder="e.g., Color" required />
                                                             </div>
                                                             <div class="col s5">
-                                                                <input type="text" name="variants[0][specs][0][value]" required />
-                                                                <label>Value</label>
-                                                                <span class="error red-text text-darken-2"></span>
+                                                                <input type="text" name="variants[0][specs][0][value]" placeholder="e.g., Red" required />
                                                             </div>
                                                             <div class="col s2">
-                                                                <button type="button" class="btn waves-effect waves-light red lighten-1" onclick="this.parentElement.parentElement.parentElement.remove()">Remove</button>
+                                                                <button type="button" class="btn waves-effect waves-light red" onclick="removeAttributeField(this)">
+                                                                    <i class="material-icons">remove</i>
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <button type="button" class="btn waves-effect waves-light blue lighten-1" onclick="addAttributeField(this)">Add Specification</button>
+                                                <button type="button" class="btn waves-effect waves-light blue" onclick="addAttributeField(this)">
+                                                    <i class="material-icons left">add</i>Add Specification
+                                                </button>
                                             </div>
-                                            <div class="col s12">
+                                            <div class="col s12 m6">
                                                 <div class="input-field">
-                                                    <input type="number" name="variants[0][quantity]" required />
-                                                    <label>Quantity</label>
-                                                    <span class="error red-text text-darken-2"></span>
+                                                    <input type="number" name="variants[0][quantity]" min="0" placeholder="Enter quantity" required />
+                                                    <label>Quantity *</label>
                                                 </div>
                                             </div>
                                         </div>
-                                        <button type="button" class="btn waves-effect waves-light red lighten-1" onclick="this.parentElement.remove()">Remove Variant</button>
+                                        <button type="button" class="btn waves-effect waves-light red" onclick="removeVariantField(this)">
+                                            <i class="material-icons left">delete</i>Remove Variant
+                                        </button>
                                     </div>
                                 </div>
                                 <br>
-                                <button type="button" class="btn waves-effect waves-light blue lighten-1" onclick="addVariantField()">Add Variant</button>
+                                <button type="button" class="btn waves-effect waves-light green" onclick="addVariantField()">
+                                    <i class="material-icons left">add</i>Add Another Variant
+                                </button>
                             </div>
 
+                            <!-- Images Section -->
                             <div class="row" style="margin-bottom: 20px;">
                                 <div class="col s12">
-                                    <h6>Images <i class="material-icons tooltipped" data-position="right" data-tooltip="Upload 1 to 4 images (crop for best display)">info</i></h6>
+                                    <h6>Product Images <i class="material-icons tooltipped" data-position="right" data-tooltip="Upload 1 to 4 images for the product">info</i></h6>
+                                    
                                     <div class="file-field input-field">
-                                        <div class="btn blue darken-2">
-                                            <span>Choose Images</span>
+                                        <div class="btn blue">
+                                            <span><i class="material-icons left">cloud_upload</i>Choose Images</span>
                                             <input type="file" name="images" multiple accept="image/*" id="imageInput" />
                                         </div>
                                         <div class="file-path-wrapper">
-                                            <input class="file-path validate" type="text" placeholder="Upload 1 to 4 images" />
+                                            <input class="file-path validate" type="text" placeholder="Upload 1 to 4 product images" />
                                         </div>
-                                        <span id="images-error" class="red-text text-darken-2"></span>
+                                        <span class="helper-text">Supported formats: JPG, PNG, WebP. Max 4 images.</span>
                                     </div>
-                                    <div id="image-preview" class="row"></div>
+                                    
+                                    <!-- Image Preview -->
+                                    <div id="image-preview" class="image-preview-container"></div>
 
-                                    <div id="cropper-section" style="display: none;">
-                                        <h6>Crop Images</h6>
+                                    <!-- Cropping Section -->
+                                    <div id="cropper-section" class="cropping-section" style="display: none;">
+                                        <h7><strong>Image Cropping (Optional)</strong></h7>
                                         <div id="cropper-preview" class="row"></div>
-                                        <button type="button" class="btn waves-effect waves-light blue darken-2" onclick="cropAllImages()">Crop All</button>
-                                        <button type="button" class="btn waves-effect waves-light grey lighten-1" onclick="skipCropping()">Skip Cropping</button>
+                                        <div class="center-align" style="margin-top: 15px;">
+                                            <button type="button" class="btn waves-effect waves-light blue" onclick="cropAllImages()">
+                                                <i class="material-icons left">crop</i>Crop All Images
+                                            </button>
+                                            <button type="button" class="btn waves-effect waves-light grey" onclick="skipCropping()">
+                                                <i class="material-icons left">skip_next</i>Skip Cropping
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <button class="btn waves-effect waves-light blue darken-2" type="submit">
-                                Add Product
-                                <i class="material-icons right">send</i>
-                            </button>
-                            <a href="/admin/products" class="btn waves-effect waves-light grey lighten-1 right" onclick="return confirmCancel()">Cancel</a>
+                            <!-- Form Actions -->
+                            <div class="center-align">
+                                <button type="submit" class="btn waves-effect waves-light green large">
+                                    <i class="material-icons left">check</i>Add Product
+                                </button>
+                                <a href="/admin/products" class="btn waves-effect waves-light grey large" onclick="return confirmCancel()">
+                                    <i class="material-icons left">cancel</i>Cancel
+                                </a>
+                            </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
+</main>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            M.FormSelect.init(document.querySelectorAll('select'));
-            M.updateTextFields();
-            M.Tooltip.init(document.querySelectorAll('.tooltipped'));
-        });
+<script>
+    // Global variables
+    let croppers = [];
+    let imageFiles = [];
+    let croppedImages = [];
 
-        let cropper;
-        let currentFile;
-        let croppedImages = [];
-        let imageFiles = [];
+    // Initialize Materialize components
+    document.addEventListener('DOMContentLoaded', function() {
+        M.FormSelect.init(document.querySelectorAll('select'));
+        M.updateTextFields();
+        M.Tooltip.init(document.querySelectorAll('.tooltipped'));
+        
+        // Form submission handler
+        document.getElementById('addProductForm').addEventListener('submit', handleFormSubmit);
+    });
 
-        document.getElementById('imageInput').addEventListener('change', function (e) {
-            const files = e.target.files;
-            const preview = document.getElementById('image-preview');
-            const cropperPreview = document.getElementById('cropper-preview');
-            preview.innerHTML = '';
-            cropperPreview.innerHTML = '';
-            imageFiles = [];
+    // Image input change handler
+    document.getElementById('imageInput').addEventListener('change', function(e) {
+        const files = e.target.files;
+        const preview = document.getElementById('image-preview');
+        const cropperPreview = document.getElementById('cropper-preview');
+        
+        // Clear previous data
+        preview.innerHTML = '';
+        cropperPreview.innerHTML = '';
+        imageFiles = [];
+        croppedImages = [];
+        croppers.forEach(cropper => cropper.destroy());
+        croppers = [];
 
-            if (files.length > 4) {
-                Swal.fire({ icon: "error", title: "Error", text: `Maximum 4 images allowed. You tried to add ${files.length}.` });
-                e.target.value = '';
-                return;
-            }
-
-            Swal.fire({ icon: "info", title: "Images Selected", text: `${files.length} image(s) selected. Total: ${files.length}/4` });
-
-            Array.from(files).forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.style.maxWidth = '100px';
-                    img.style.margin = '10px';
-                    preview.appendChild(img);
-
-                    const cropperDiv = document.createElement('div');
-                    cropperDiv.className = 'col s6';
-                    cropperDiv.innerHTML = `
-                        <img id="cropper-image-${index}" src="${e.target.result}" style="max-width: 100%;">
-                        <button type="button" class="btn waves-effect waves-light blue darken-2" onclick="cropSingleImage(${index})">Crop</button>
-                        <button type="button" class="btn waves-effect waves-light orange lighten-1" onclick="undoCrop(${index})">Undo Crop</button>
-                    `;
-                    cropperPreview.appendChild(cropperDiv);
-                    imageFiles.push({ file, cropper: null });
-                    initializeCropper(index);
-                };
-                reader.readAsDataURL(file);
-            });
-
-            document.getElementById('cropper-section').style.display = 'block';
-        });
-
-        function initializeCropper(index) {
-            const img = document.getElementById(`cropper-image-${index}`);
-            imageFiles[index].cropper = new Cropper(img, {
-                aspectRatio: 1,
-                viewMode: 1,
-                autoCropArea: 0.8
-            });
-        }
-
-        function cropSingleImage(index) {
-            const canvas = imageFiles[index].cropper.getCroppedCanvas({ width: 440, height: 440 });
-            canvas.toBlob(blob => {
-                const url = URL.createObjectURL(blob);
-                const preview = document.getElementById('image-preview');
-                const img = preview.children[index];
-                img.src = url;
-                img.style.border = '2px solid green';
-                const file = new File([blob], imageFiles[index].file.name, { type: imageFiles[index].file.type });
-                croppedImages[index] = file;
-                document.getElementById(`cropper-image-${index}`).style.border = '2px solid green';
-            });
-        }
-
-        function cropAllImages() {
-            croppedImages = [];
-            imageFiles.forEach((fileObj, index) => {
-                if (fileObj.cropper) {
-                    const canvas = fileObj.cropper.getCroppedCanvas({ width: 440, height: 440 });
-                    canvas.toBlob(blob => {
-                        const url = URL.createObjectURL(blob);
-                        const preview = document.getElementById('image-preview');
-                        const img = preview.children[index];
-                        img.src = url;
-                        img.style.border = '2px solid green';
-                        const file = new File([blob], fileObj.file.name, { type: fileObj.file.type });
-                        croppedImages[index] = file;
-                        if (croppedImages.length === imageFiles.length) {
-                            Swal.fire({ icon: "success", title: "Success", text: "All images cropped" });
-                            document.getElementById('cropper-section').style.display = 'none';
-                        }
-                    });
-                }
-            });
-        }
-
-        function undoCrop(index) {
-            if (imageFiles[index].cropper) {
-                imageFiles[index].cropper.destroy();
-            }
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById(`cropper-image-${index}`).src = e.target.result;
-                initializeCropper(index);
-                document.getElementById(`cropper-image-${index}`).style.border = 'none';
-                const preview = document.getElementById('image-preview');
-                const img = preview.children[index];
-                img.src = e.target.result;
-                img.style.border = 'none';
-                croppedImages[index] = null;
-            };
-            reader.readAsDataURL(imageFiles[index].file);
-        }
-
-        function skipCropping() {
-            croppedImages = imageFiles.map(fileObj => fileObj.file);
+        if (files.length === 0) {
             document.getElementById('cropper-section').style.display = 'none';
-            Swal.fire({ icon: "info", title: "Skipped", text: "Cropping skipped, original images will be used" });
+            return;
         }
 
-        function addVariantField() {
-            const container = document.getElementById('variant-fields');
-            if (container.children.length >= 5) {
-                Swal.fire({ icon: "error", title: "Error", text: "Maximum 5 variants allowed" });
+        if (files.length > 4) {
+            Swal.fire({
+                icon: "error",
+                title: "Too Many Images",
+                text: `Maximum 4 images allowed. You selected ${files.length} images.`
+            });
+            e.target.value = '';
+            return;
+        }
+
+        // Process each file
+        Array.from(files).forEach((file, index) => {
+            if (!file.type.match('image.*')) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Invalid File",
+                    text: "Please select only image files."
+                });
                 return;
             }
-            const index = container.children.length;
-            const variantDiv = document.createElement('div');
-            variantDiv.className = 'variant-field';
-            variantDiv.innerHTML = `
-                <div class="row">
-                    <div class="col s12">
-                        <div class="attribute-fields">
-                            <div class="attribute-field">
-                                <div class="row">
-                                    <div class="col s5">
-                                        <input type="text" name="variants[${index}][specs][0][name]" required />
-                                        <label>Specification</label>
-                                        <span class="error red-text text-darken-2"></span>
-                                    </div>
-                                    <div class="col s5">
-                                        <input type="text" name="variants[${index}][specs][0][value]" required />
-                                        <label>Value</label>
-                                        <span class="error red-text text-darken-2"></span>
-                                    </div>
-                                    <div class="col s2">
-                                        <button type="button" class="btn waves-effect waves-light red lighten-1" onclick="this.parentElement.parentElement.parentElement.remove()">Remove</button>
-                                    </div>
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Create preview thumbnail
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'preview-image';
+                previewDiv.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview ${index + 1}">
+                    <button type="button" class="remove-image" onclick="removeImage(${index})">×</button>
+                `;
+                preview.appendChild(previewDiv);
+
+                // Create cropper container
+                const cropperDiv = document.createElement('div');
+                cropperDiv.className = 'col s12 m6';
+                cropperDiv.innerHTML = `
+                    <div class="cropper-container">
+                        <img id="cropper-image-${index}" src="${e.target.result}" style="max-width: 100%; max-height: 300px;">
+                    </div>
+                    <div class="center-align">
+                        <button type="button" class="btn waves-effect waves-light blue small" onclick="cropSingleImage(${index})">
+                            <i class="material-icons tiny">crop</i> Crop
+                        </button>
+                        <button type="button" class="btn waves-effect waves-light orange small" onclick="resetCropper(${index})">
+                            <i class="material-icons tiny">refresh</i> Reset
+                        </button>
+                    </div>
+                `;
+                cropperPreview.appendChild(cropperDiv);
+
+                // Store file data
+                imageFiles.push({
+                    file: file,
+                    originalUrl: e.target.result
+                });
+
+                // Initialize cropper
+                initializeCropper(index);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('cropper-section').style.display = 'block';
+    });
+
+    function initializeCropper(index) {
+        const imageElement = document.getElementById(`cropper-image-${index}`);
+        const cropper = new Cropper(imageElement, {
+            aspectRatio: 1,
+            viewMode: 1,
+            autoCropArea: 0.8,
+            responsive: true,
+            restore: false,
+            guides: true,
+            center: true,
+            highlight: false,
+            cropBoxMovable: true,
+            cropBoxResizable: true
+        });
+        croppers[index] = cropper;
+    }
+
+    function cropSingleImage(index) {
+        if (!croppers[index]) return;
+
+        const canvas = croppers[index].getCroppedCanvas({
+            width: 440,
+            height: 440,
+            fillColor: '#fff'
+        });
+        
+        canvas.toBlob(blob => {
+            // Update preview image
+            const previewImages = document.querySelectorAll('#image-preview .preview-image img');
+            if (previewImages[index]) {
+                previewImages[index].src = URL.createObjectURL(blob);
+                previewImages[index].style.border = '2px solid #4CAF50';
+            }
+
+            // Update cropper image border
+            const cropperImage = document.getElementById(`cropper-image-${index}`);
+            cropperImage.style.border = '2px solid #4CAF50';
+
+            // Store cropped image
+            croppedImages[index] = new File([blob], `cropped-${imageFiles[index].file.name}`, {
+                type: imageFiles[index].file.type
+            });
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Image Cropped',
+                text: 'Image has been successfully cropped',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }, imageFiles[index].file.type);
+    }
+
+    function resetCropper(index) {
+        if (croppers[index]) {
+            croppers[index].destroy();
+            initializeCropper(index);
+            
+            // Reset preview
+            const previewImages = document.querySelectorAll('#image-preview .preview-image img');
+            if (previewImages[index]) {
+                previewImages[index].src = imageFiles[index].originalUrl;
+                previewImages[index].style.border = 'none';
+            }
+
+            const cropperImage = document.getElementById(`cropper-image-${index}`);
+            cropperImage.style.border = 'none';
+
+            croppedImages[index] = null;
+        }
+    }
+
+    function cropAllImages() {
+        let processed = 0;
+        const total = imageFiles.length;
+
+        imageFiles.forEach((_, index) => {
+            if (croppers[index]) {
+                cropSingleImage(index);
+                processed++;
+            }
+        });
+
+        if (processed === total) {
+            Swal.fire({
+                icon: 'success',
+                title: 'All Images Cropped',
+                text: 'All images have been cropped successfully',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+    }
+
+    function skipCropping() {
+        // Use original files if no cropping was done
+        croppedImages = imageFiles.map(item => item.file);
+        document.getElementById('cropper-section').style.display = 'none';
+        
+        Swal.fire({
+            icon: 'info',
+            title: 'Cropping Skipped',
+            text: 'Original images will be used',
+            timer: 1500,
+            showConfirmButton: false
+        });
+    }
+
+    function removeImage(index) {
+        // Remove from preview
+        const preview = document.getElementById('image-preview');
+        const previewImages = preview.querySelectorAll('.preview-image');
+        if (previewImages[index]) {
+            previewImages[index].remove();
+        }
+
+        // Remove from croppers
+        if (croppers[index]) {
+            croppers[index].destroy();
+            croppers[index] = null;
+        }
+
+        // Update file input
+        const fileInput = document.getElementById('imageInput');
+        const newFiles = Array.from(fileInput.files).filter((_, i) => i !== index);
+        
+        const dataTransfer = new DataTransfer();
+        newFiles.forEach(file => dataTransfer.items.add(file));
+        fileInput.files = dataTransfer.files;
+
+        // Update file path display
+        const filePath = document.querySelector('.file-path');
+        filePath.value = newFiles.map(f => f.name).join(', ');
+
+        // Reset arrays
+        imageFiles.splice(index, 1);
+        croppedImages.splice(index, 1);
+        croppers.splice(index, 1);
+
+        if (newFiles.length === 0) {
+            document.getElementById('cropper-section').style.display = 'none';
+        }
+    }
+
+    // Variant Management Functions
+    function addVariantField() {
+        const container = document.getElementById('variant-fields');
+        const variantCount = container.children.length;
+
+        if (variantCount >= 10) {
+            Swal.fire({
+                icon: "error",
+                title: "Maximum Variants Reached",
+                text: "You can only add up to 10 variants"
+            });
+            return;
+        }
+
+        const variantDiv = document.createElement('div');
+        variantDiv.className = 'variant-field';
+        variantDiv.innerHTML = `
+            <div class="row">
+                <div class="col s12">
+                    <h7><strong>Specifications</strong></h7>
+                    <div class="attribute-fields">
+                        <div class="attribute-field">
+                            <div class="row">
+                                <div class="col s5">
+                                    <input type="text" name="variants[${variantCount}][specs][0][name]" placeholder="e.g., Size" required />
+                                </div>
+                                <div class="col s5">
+                                    <input type="text" name="variants[${variantCount}][specs][0][value]" placeholder="e.g., Large" required />
+                                </div>
+                                <div class="col s2">
+                                    <button type="button" class="btn waves-effect waves-light red" onclick="removeAttributeField(this)">
+                                        <i class="material-icons">remove</i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                        <button type="button" class="btn waves-effect waves-light blue lighten-1" onclick="addAttributeField(this)">Add Specification</button>
                     </div>
-                    <div class="col s12">
-                        <div class="input-field">
-                            <input type="number" name="variants[${index}][quantity]" required />
-                            <label>Quantity</label>
-                            <span class="error red-text text-darken-2"></span>
-                        </div>
+                    <button type="button" class="btn waves-effect waves-light blue" onclick="addAttributeField(this)">
+                        <i class="material-icons left">add</i>Add Specification
+                    </button>
+                </div>
+                <div class="col s12 m6">
+                    <div class="input-field">
+                        <input type="number" name="variants[${variantCount}][quantity]" min="0" placeholder="Enter quantity" required />
+                        <label>Quantity *</label>
                     </div>
                 </div>
-                <button type="button" class="btn waves-effect waves-light red lighten-1" onclick="this.parentElement.remove()">Remove Variant</button>
-            `;
-            container.appendChild(variantDiv);
-            M.updateTextFields();
+            </div>
+            <button type="button" class="btn waves-effect waves-light red" onclick="removeVariantField(this)">
+                <i class="material-icons left">delete</i>Remove Variant
+            </button>
+        `;
+        container.appendChild(variantDiv);
+        M.updateTextFields();
+    }
+
+    function removeVariantField(button) {
+        const variantFields = document.getElementById('variant-fields');
+        if (variantFields.children.length <= 1) {
+            Swal.fire({
+                icon: "error",
+                title: "Cannot Remove",
+                text: "At least one variant is required"
+            });
+            return;
+        }
+        button.closest('.variant-field').remove();
+        reindexVariants();
+    }
+
+    function addAttributeField(button) {
+        const attributeFields = button.previousElementSibling;
+        const variantIndex = Array.from(attributeFields.closest('.variant-field').parentNode.children)
+            .indexOf(attributeFields.closest('.variant-field'));
+        const specCount = attributeFields.children.length;
+
+        if (specCount >= 5) {
+            Swal.fire({
+                icon: "error",
+                title: "Maximum Specifications",
+                text: "Maximum 5 specifications per variant allowed"
+            });
+            return;
         }
 
-        function addAttributeField(button) {
-            const attributeFields = button.parentElement.querySelector('.attribute-fields');
-            if (attributeFields.children.length >= 10) {
-                Swal.fire({ icon: "error", title: "Error", text: "Maximum 10 specifications per variant allowed" });
-                return;
-            }
-            const variantIndex = Array.from(document.querySelectorAll('.variant-field')).indexOf(button.closest('.variant-field'));
-            const specIndex = attributeFields.children.length;
-            const attributeDiv = document.createElement('div');
-            attributeDiv.className = 'attribute-field';
-            attributeDiv.innerHTML = `
-                <div class="row">
-                    <div class="col s5">
-                        <input type="text" name="variants[${variantIndex}][specs][${specIndex}][name]" required />
-                        <label>Specification</label>
-                        <span class="error red-text text-darken-2"></span>
-                    </div>
-                    <div class="col s5">
-                        <input type="text" name="variants[${variantIndex}][specs][${specIndex}][value]" required />
-                        <label>Value</label>
-                        <span class="error red-text text-darken-2"></span>
-                    </div>
-                    <div class="col s2">
-                        <button type="button" class="btn waves-effect waves-light red lighten-1" onclick="this.parentElement.parentElement.parentElement.remove()">Remove</button>
-                    </div>
+        const attributeDiv = document.createElement('div');
+        attributeDiv.className = 'attribute-field';
+        attributeDiv.innerHTML = `
+            <div class="row">
+                <div class="col s5">
+                    <input type="text" name="variants[${variantIndex}][specs][${specCount}][name]" placeholder="e.g., Material" required />
                 </div>
-            `;
-            attributeFields.appendChild(attributeDiv);
-            M.updateTextFields();
-        }
+                <div class="col s5">
+                    <input type="text" name="variants[${variantIndex}][specs][${specCount}][value]" placeholder="e.g., Cotton" required />
+                </div>
+                <div class="col s2">
+                    <button type="button" class="btn waves-effect waves-light red" onclick="removeAttributeField(this)">
+                        <i class="material-icons">remove</i>
+                    </button>
+                </div>
+            </div>
+        `;
+        attributeFields.appendChild(attributeDiv);
+    }
 
-        function confirmCancel() {
-            return confirm('Are you sure you want to cancel? All unsaved changes will be lost.');
-        }
-
-        function handleFormSubmit(event) {
-            event.preventDefault();
-            if (!validateForm()) return;
-            Swal.fire({ title: 'Processing...', text: 'Please wait', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-            const formData = new FormData(document.getElementById('addProductForm'));
-            formData.delete('images');
-            croppedImages.forEach((file, index) => {
-                if (file) formData.append('images', file);
+    function removeAttributeField(button) {
+        const attributeFields = button.closest('.attribute-fields');
+        if (attributeFields.children.length <= 1) {
+            Swal.fire({
+                icon: "error",
+                title: "Cannot Remove",
+                text: "At least one specification is required"
             });
-            fetch('/admin/addProducts', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => {
-                    if (!response.ok) return response.json().then(err => { throw new Error(err.message); });
-                    return response.json();
-                })
-                .then(data => {
-                    Swal.fire({ icon: 'success', title: 'Success', text: data.message })
-                        .then(() => window.location.href = data.redirectUrl);
-                })
-                .catch(error => {
-                    Swal.fire({ icon: 'error', title: 'Error', text: error.message });
-                });
+            return;
         }
+        button.closest('.attribute-field').remove();
+    }
 
-        function validateForm() {
-            clearErrors();
-            let isValid = true;
-
-            const productName = document.getElementById('product_name').value.trim();
-            if (!productName) {
-                displayError('name-error', 'Product name is required', 'product_name');
-                isValid = false;
-            }
-
-            const brand = document.getElementById('brand').value;
-            if (!brand) {
-                displayError('brand-error', 'Please select a brand', 'brand');
-                isValid = false;
-            }
-
-            const description = document.getElementById('description').value.trim();
-            if (!description) {
-                displayError('description-error', 'Description is required', 'description');
-                isValid = false;
-            }
-
-            const category = document.getElementById('category').value;
-            if (!category) {
-                displayError('category-error', 'Please select a category', 'category');
-                isValid = false;
-            }
-
-            const regularPrice = parseFloat(document.getElementById('regular_price').value);
-            if (!regularPrice || regularPrice <= 0) {
-                displayError('regular-price-error', 'Valid regular price is required', 'regular_price');
-                isValid = false;
-            }
-
-            const salePrice = parseFloat(document.getElementById('sale_price').value);
-            if (!salePrice || salePrice <= 0) {
-                displayError('sale-price-error', 'Valid sale price is required', 'sale_price');
-                isValid = false;
-            }
-            if (salePrice > regularPrice) {
-                displayError('sale-price-error', 'Sale price must be less than or equal to regular price', 'sale_price');
-                isValid = false;
-            }
-
-            const variants = document.querySelectorAll('.variant-field');
-            if (variants.length === 0) {
-                Swal.fire({ icon: "error", title: "Error", text: "At least one variant is required" });
-                isValid = false;
-            }
-
-            variants.forEach((variant, variantIndex) => {
-                const quantityInput = variant.querySelector(`input[name="variants[${variantIndex}][quantity]"]`);
-                const quantity = quantityInput.value;
-                if (!quantity || parseInt(quantity) < 0) {
-                    variant.querySelector('.error').textContent = 'Valid quantity is required';
-                    quantityInput.classList.add('invalid');
-                    isValid = false;
+    function reindexVariants() {
+        const variants = document.querySelectorAll('.variant-field');
+        variants.forEach((variant, variantIndex) => {
+            // Update variant inputs
+            const inputs = variant.querySelectorAll('input');
+            inputs.forEach(input => {
+                const name = input.getAttribute('name');
+                if (name) {
+                    input.setAttribute('name', name.replace(/variants\[\d+\]/, `variants[${variantIndex}]`));
                 }
-
-                const specs = variant.querySelectorAll('.attribute-field');
-                if (specs.length === 0) {
-                    Swal.fire({ icon: "error", title: "Error", text: "At least one specification is required per variant" });
-                    isValid = false;
-                }
-
-                const specNames = new Set();
-                specs.forEach((spec, specIndex) => {
-                    const nameInput = spec.querySelector(`input[name="variants[${variantIndex}][specs][${specIndex}][name]"]`);
-                    const valueInput = spec.querySelector(`input[name="variants[${variantIndex}][specs][${specIndex}][value]"]`);
-                    const name = nameInput.value.trim();
-                    const value = valueInput.value.trim();
-                    if (!name) {
-                        spec.querySelector('.error').textContent = 'Specification name is required';
-                        nameInput.classList.add('invalid');
-                        isValid = false;
-                    }
-                    if (!value) {
-                        spec.querySelector('.error').textContent = 'Specification value is required';
-                        valueInput.classList.add('invalid');
-                        isValid = false;
-                    }
-                    if (specNames.has(name.toLowerCase())) {
-                        spec.querySelector('.error').textContent = 'Specification names must be unique within a variant';
-                        nameInput.classList.add('invalid');
-                        isValid = false;
-                    }
-                    specNames.add(name.toLowerCase());
-                });
             });
 
-            if (!document.getElementById('imageInput').files.length && croppedImages.length === 0) {
-                displayError('images-error', 'Please select at least one image to upload', 'imageInput');
-                isValid = false;
+            // Update buttons
+            const addButton = variant.querySelector('button[onclick*="addAttributeField"]');
+            if (addButton) {
+                addButton.setAttribute('onclick', `addAttributeField(this)`);
             }
+        });
+    }
 
-            return isValid;
+    function confirmCancel() {
+        return confirm('Are you sure you want to cancel? All unsaved changes will be lost.');
+    }
+
+async function handleFormSubmit(event) {
+    event.preventDefault();
+    
+    if (!validateForm()) {
+        return;
+    }
+
+    try {
+        // Show loading indicator
+        Swal.fire({
+            title: 'Adding Product...',
+            text: 'Please wait while we process your product',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Prepare form data
+        const formData = new FormData();
+        const formElements = event.target.elements;
+
+        // Add basic form data
+        ['productName', 'brand', 'category', 'description', 'regularPrice', 'salePrice'].forEach(field => {
+            if (formElements[field]) {
+                formData.append(field, formElements[field].value);
+            }
+        });
+
+        // Add variants data - FIXED: Properly format variants
+        const variants = collectVariantsData();
+        formData.append('variants', JSON.stringify(variants));
+
+        // Add images (use cropped images if available, otherwise original files)
+        const filesToUpload = croppedImages.length > 0 ? 
+            croppedImages.filter(img => img !== null) : 
+            Array.from(document.getElementById('imageInput').files);
+
+        if (filesToUpload.length === 0) {
+            throw new Error('Please select at least one image');
         }
 
-        function displayError(id, message, inputId) {
-            const el = document.getElementById(id);
-            if (el) {
-                el.textContent = message;
-                el.style.display = 'block';
-                if (inputId) {
-                    const input = document.getElementById(inputId);
-                    if (input && (input.tagName === 'INPUT' || input.tagName === 'TEXTAREA' || input.tagName === 'SELECT')) {
-                        input.classList.add('invalid');
-                    }
-                }
-            }
+        filesToUpload.forEach((file, index) => {
+            formData.append('images', file);
+        });
+
+        console.log('Form data prepared, variants:', variants);
+
+        // Submit form
+        const response = await fetch('/admin/addProducts', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to add product');
         }
 
-        function clearErrors() {
-            document.querySelectorAll('.error').forEach(el => {
-                el.textContent = '';
-                el.style.display = 'none';
-                const input = el.previousElementSibling;
-                if (input && (input.tagName === 'INPUT' || input.tagName === 'TEXTAREA' || input.tagName === 'SELECT')) {
-                    input.classList.remove('invalid');
+        // Success
+        await Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: data.message,
+            confirmButtonText: 'OK'
+        });
+
+        window.location.href = data.redirectUrl || '/admin/products';
+
+    } catch (error) {
+        console.error('Form submission error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Something went wrong. Please try again.'
+        });
+    }
+}
+
+function collectVariantsData() {
+    const variants = [];
+    const variantFields = document.querySelectorAll('.variant-field');
+    
+    variantFields.forEach((variantField, variantIndex) => {
+        const specs = [];
+        const attributeFields = variantField.querySelectorAll('.attribute-field');
+        
+        attributeFields.forEach(attrField => {
+            const inputs = attrField.querySelectorAll('input[type="text"]');
+            if (inputs.length >= 2) {
+                const nameInput = inputs[0];
+                const valueInput = inputs[1];
+                
+                if (nameInput.value.trim() && valueInput.value.trim()) {
+                    specs.push({
+                        name: nameInput.value.trim(),
+                        value: valueInput.value.trim()
+                    });
                 }
+            }
+        });
+
+        const quantityInput = variantField.querySelector('input[type="number"]');
+        const quantity = quantityInput ? parseInt(quantityInput.value) : 0;
+
+        if (specs.length > 0 && quantity >= 0) {
+            variants.push({
+                specs: specs,
+                quantity: quantity
             });
         }
-    </script>
+    });
+
+    return variants;
+}
+
+    function validateForm() {
+        let isValid = true;
+
+        // Clear previous errors
+        document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+        document.querySelectorAll('.helper-text').forEach(el => {
+            el.style.display = 'none';
+            el.textContent = '';
+        });
+
+        // Basic field validation
+        const requiredFields = [
+            { id: 'product_name', message: 'Product name is required' },
+            { id: 'brand', message: 'Please select a brand' },
+            { id: 'category', message: 'Please select a category' },
+            { id: 'description', message: 'Description is required' },
+            { id: 'regular_price', message: 'Regular price is required' },
+            { id: 'sale_price', message: 'Sale price is required' }
+        ];
+
+        requiredFields.forEach(field => {
+            const element = document.getElementById(field.id);
+            if (!element.value.trim()) {
+                markFieldInvalid(element, field.message);
+                isValid = false;
+            }
+        });
+
+        // Price validation
+        const regularPrice = parseFloat(document.getElementById('regular_price').value);
+        const salePrice = parseFloat(document.getElementById('sale_price').value);
+
+        if (regularPrice <= 0) {
+            markFieldInvalid(document.getElementById('regular_price'), 'Regular price must be greater than 0');
+            isValid = false;
+        }
+
+        if (salePrice <= 0) {
+            markFieldInvalid(document.getElementById('sale_price'), 'Sale price must be greater than 0');
+            isValid = false;
+        }
+
+        if (salePrice > regularPrice) {
+            markFieldInvalid(document.getElementById('sale_price'), 'Sale price cannot be greater than regular price');
+            isValid = false;
+        }
+
+        // Variants validation
+        const variants = collectVariantsData();
+        if (variants.length === 0) {
+            Swal.fire({
+                icon: "error",
+                title: "Variants Required",
+                text: "At least one variant with specifications is required"
+            });
+            isValid = false;
+        }
+
+        // Images validation
+        const fileInput = document.getElementById('imageInput');
+        if (fileInput.files.length === 0) {
+            Swal.fire({
+                icon: "error",
+                title: "Images Required",
+                text: "Please select at least one product image"
+            });
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    function markFieldInvalid(element, message) {
+        element.classList.add('invalid');
+        const helperText = element.nextElementSibling;
+        if (helperText && helperText.classList.contains('helper-text')) {
+            helperText.style.display = 'block';
+            helperText.textContent = message;
+            helperText.setAttribute('data-error', message);
+        }
+    }
+</script>
 
 <%- include("../../views/partials/admin/footer") %>

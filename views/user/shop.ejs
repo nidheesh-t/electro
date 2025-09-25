@@ -16,8 +16,6 @@
         --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
         --transition: all 0.3s ease;
         --border-radius: 10px;
-        /* --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; */
-        /* --base-font-size: 1.5rem; */
     }
 
     * {
@@ -422,6 +420,33 @@
         font-size: 1.6rem;
     }
 
+    /* Product Status Badges */
+    .product-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        z-index: 2;
+    }
+
+    .badge-new {
+        background: #28a745;
+        color: white;
+    }
+
+    .badge-out-of-stock {
+        background: #dc3545;
+        color: white;
+    }
+
+    .badge-sale {
+        background: #ffc107;
+        color: #212529;
+    }
+
     /* Pagination */
     .pagination {
         display: flex;
@@ -571,14 +596,10 @@
                     <input type="hidden" name="maxPrice" value="<%= selectedMaxPrice || '' %>">
                     <select name="sort" id="sort" onchange="this.form.submit()" aria-label="Sort products">
                         <option value="newest" <%=selectedSort==='newest' ? 'selected' : '' %>>Newest</option>
-                        <option value="price-asc" <%=selectedSort==='price-asc' ? 'selected' : '' %>>Price: Low to
-                            High</option>
-                        <option value="price-desc" <%=selectedSort==='price-desc' ? 'selected' : '' %>>Price: High
-                            to Low</option>
-                        <option value="name-asc" <%=selectedSort==='name-asc' ? 'selected' : '' %>>Name: A-Z
-                        </option>
-                        <option value="name-desc" <%=selectedSort==='name-desc' ? 'selected' : '' %>>Name: Z-A
-                        </option>
+                        <option value="price-asc" <%=selectedSort==='price-asc' ? 'selected' : '' %>>Price: Low to High</option>
+                        <option value="price-desc" <%=selectedSort==='price-desc' ? 'selected' : '' %>>Price: High to Low</option>
+                        <option value="name-asc" <%=selectedSort==='name-asc' ? 'selected' : '' %>>Name: A-Z</option>
+                        <option value="name-desc" <%=selectedSort==='name-desc' ? 'selected' : '' %>>Name: Z-A</option>
                     </select>
                 </form>
             </div>
@@ -589,195 +610,212 @@
                 <% if (searchQuery) { %>
                     <div class="filter-tag">
                         Search: <%= searchQuery %>
-                            <a href="/filter?<%= buildQueryString({ search: null }) %>"
-                                aria-label="Remove search filter">×</a>
+                        <a href="/filter?<%= buildQueryString({ search: null }) %>"
+                            aria-label="Remove search filter">×</a>
                     </div>
-                    <% } %>
-                        <% if (selectedCategory) { %>
-                            <div class="filter-tag">
-                                Category: <%= category.find(c=> c._id.toString() === selectedCategory)?.categoryName
-                                    || 'Unknown' %>
-                                    <a href="/filter?<%= buildQueryString({ category: null }) %>"
-                                        aria-label="Remove category filter">×</a>
-                            </div>
-                            <% } %>
-                                <% if (selectedBrand) { %>
-                                    <div class="filter-tag">
-                                        Brand: <%= brand.find(b=> b._id.toString() === selectedBrand)?.brandName ||
-                                            'Unknown' %>
-                                            <a href="/filter?<%= buildQueryString({ brand: null }) %>"
-                                                aria-label="Remove brand filter">×</a>
-                                    </div>
-                                    <% } %>
-                                        <% if (selectedMinPrice || selectedMaxPrice) { %>
-                                            <div class="filter-tag">
-                                                Price:
-                                                <%= selectedMinPrice ? `₹${selectedMinPrice}` : '' %>
-                                                    <%= selectedMinPrice && selectedMaxPrice ? ' - ' : '' %>
-                                                        <%= selectedMaxPrice ? `₹${selectedMaxPrice}` : '' %>
-                                                            <a href="/filter?<%= buildQueryString({ minPrice: null, maxPrice: null }) %>"
-                                                                aria-label="Remove price filter">×</a>
-                                            </div>
-                                            <% } %>
-                                                <button class="clear-filters"
-                                                    onclick="window.location.href='/filter'"
-                                                    aria-label="Clear all filters">
-                                                    <i class="fas fa-times"></i> Clear All Filters
-                                                </button>
+                <% } %>
+                
+                <% if (selectedCategory) { %>
+                    <div class="filter-tag">
+                        Category: <%= category.find(c => c._id.toString() === selectedCategory)?.categoryName || 'Unknown' %>
+                        <a href="/filter?<%= buildQueryString({ category: null }) %>"
+                            aria-label="Remove category filter">×</a>
+                    </div>
+                <% } %>
+                
+                <% if (selectedBrand) { %>
+                    <div class="filter-tag">
+                        Brand: <%= brand.find(b => b._id.toString() === selectedBrand)?.brandName || 'Unknown' %>
+                        <a href="/filter?<%= buildQueryString({ brand: null }) %>"
+                            aria-label="Remove brand filter">×</a>
+                    </div>
+                <% } %>
+                
+                <% if (selectedMinPrice || selectedMaxPrice) { %>
+                    <div class="filter-tag">
+                        Price:
+                        <%= selectedMinPrice ? `₹${selectedMinPrice}` : '' %>
+                        <%= selectedMinPrice && selectedMaxPrice ? ' - ' : '' %>
+                        <%= selectedMaxPrice ? `₹${selectedMaxPrice}` : '' %>
+                        <a href="/filter?<%= buildQueryString({ minPrice: null, maxPrice: null }) %>"
+                            aria-label="Remove price filter">×</a>
+                    </div>
+                <% } %>
+                
+                <button class="clear-filters"
+                    onclick="window.location.href='/filter'"
+                    aria-label="Clear all filters">
+                    <i class="fas fa-times"></i> Clear All Filters
+                </button>
             </div>
-            <% } %>
+        <% } %>
 
-                <div class="product-list-container">
-                    <aside class="sidebar">
-                        <div class="filter-section">
-                            <div class="filter-title">Categories</div>
-                            <ul>
-                                <% if (category && category.length> 0) { %>
-                                    <% category.forEach((cat)=> { %>
-                                        <li class="filter-item">
-                                            <a href="/filter?<%= buildQueryString({ category: cat._id, page: null }) %>"
-                                                class="<%= selectedCategory === cat._id.toString() ? 'active' : '' %>"
-                                                aria-label="Filter by <%= cat.categoryName %>">
-                                                <%= cat.categoryName %>
-                                            </a>
-                                        </li>
-                                        <% }); %>
-                                            <% } else { %>
-                                                <li class="filter-item">No categories found</li>
-                                                <% } %>
-                            </ul>
-                        </div>
-
-                        <div class="filter-section">
-                            <div class="filter-title">Brands</div>
-                            <ul>
-                                <% if (brand && brand.length> 0) { %>
-                                    <% brand.forEach((br)=> { %>
-                                        <li class="filter-item">
-                                            <a href="/filter?<%= buildQueryString({ brand: br._id, page: null }) %>"
-                                                class="<%= selectedBrand === br._id.toString() ? 'active' : '' %>"
-                                                aria-label="Filter by <%= br.brandName %>">
-                                                <%= br.brandName %>
-                                            </a>
-                                        </li>
-                                        <% }); %>
-                                            <% } else { %>
-                                                <li class="filter-item">No brands found</li>
-                                                <% } %>
-                            </ul>
-                        </div>
-
-                        <div class="price-filter">
-                            <div class="filter-title">Price Range</div>
-                            <form id="priceFilterForm" method="get" action="/filter">
-                                <input type="hidden" name="search" value="<%= searchQuery || '' %>">
-                                <input type="hidden" name="category" value="<%= selectedCategory || '' %>">
-                                <input type="hidden" name="brand" value="<%= selectedBrand || '' %>">
-                                <input type="hidden" name="sort" value="<%= selectedSort || '' %>">
-                                <div class="price-range-inputs">
-                                    <input type="number" name="minPrice" placeholder="Min"
-                                        value="<%= selectedMinPrice || '' %>" aria-label="Minimum price">
-                                    <span>to</span>
-                                    <input type="number" name="maxPrice" placeholder="Max"
-                                        value="<%= selectedMaxPrice || '' %>" aria-label="Maximum price">
-                                </div>
-                                <button type="submit" class="apply-button">Apply Price Filter</button>
-                            </form>
-                        </div>
-                    </aside>
-
-                    <main class="product-grid">
-                        <% if (typeof searchQuery !=='undefined' && searchQuery) { %>
-                            <div class="search-feedback">
-                                Showing results for "<%= searchQuery %>" (<%= count || products.length %> found)
-                            </div>
-                            <% } %>
-
-                                <% if (products && products.length> 0) { %>
-                                    <% products.forEach((product)=> { %>
-                                        <div class="product-card">
-                                            <button class="wishlist-btn"
-                                                onclick="toggleWishlist('<%= product._id %>')"
-                                                aria-label="Toggle wishlist for <%= product.productName %>">
-                                                <i class="fas fa-heart"></i>
-                                            </button>
-                                            <a href="/productDetails/<%= product._id %>"
-                                                aria-label="View <%= product.productName %> details">
-                                                <img loading="lazy"
-                                                    src="/uploads/re-image/<%= product.productImage?.[0] || '/images/default-placeholder.jpg' %>"
-                                                    alt="<%= product.productName %>" />
-                                                <h4>
-                                                    <%= product.productName.toUpperCase() %>
-                                                </h4>
-                                                <p class="brand">Brand: <%= product.brand?.brandName || 'Unknown' %>
-                                                </p>
-                                                <div class="price">
-                                                    ₹<%= product.salePrice.toLocaleString('en-IN') %>
-                                                        <% if (product.regularPrice> product.salePrice) { %>
-                                                            <span class="original-price">₹<%=
-                                                                    product.regularPrice.toLocaleString('en-IN') %>
-                                                            </span>
-                                                            <% } %>
-                                                </div>
-                                            </a>
-                                            <button class="add-to-cart-btn"
-                                                onclick="addToCart('<%= product._id %>')"
-                                                aria-label="Add <%= product.productName %> to cart">
-                                                <i class="fas fa-shopping-cart"></i> Add to Cart
-                                            </button>
-                                        </div>
-                                        <% }); %>
-                                            <% } else { %>
-                                                <div class="no-products">
-                                                    <h3>No products found</h3>
-                                                    <% if (typeof searchQuery !=='undefined' && searchQuery) { %>
-                                                        <p>No results found for "<%= searchQuery %>"</p>
-                                                        <% } else { %>
-                                                            <p>Try adjusting your search or filter criteria</p>
-                                                            <% } %>
-                                                                <button class="price-button"
-                                                                    onclick="window.location.href='/filter'"
-                                                                    aria-label="Clear all filters">
-                                                                    Clear Filters
-                                                                </button>
-                                                </div>
-                                                <% } %>
-                    </main>
+        <div class="product-list-container">
+            <aside class="sidebar">
+                <div class="filter-section">
+                    <div class="filter-title">Categories</div>
+                    <ul>
+                        <% if (category && category.length > 0) { %>
+                            <% category.forEach((cat) => { %>
+                                <li class="filter-item">
+                                    <a href="/filter?<%= buildQueryString({ category: cat._id, page: null }) %>"
+                                        class="<%= selectedCategory === cat._id.toString() ? 'active' : '' %>"
+                                        aria-label="Filter by <%= cat.categoryName %>">
+                                        <%= cat.categoryName %>
+                                    </a>
+                                </li>
+                            <% }); %>
+                        <% } else { %>
+                            <li class="filter-item">No categories found</li>
+                        <% } %>
+                    </ul>
                 </div>
 
-                <% if (totalPages> 1) { %>
-                    <div class="pagination">
-                        <% if (currentPage> 1) { %>
-                            <a class="btn" href="/filter?<%= buildQueryString({ page: currentPage - 1 }) %>"
-                                aria-label="Previous page">Previous</a>
-                            <% } %>
-                                <% for (let i=1; i <=totalPages; i++) { %>
-                                    <a class="btn <%= currentPage === i ? 'active' : '' %>"
-                                        href="/filter?<%= buildQueryString({ page: i }) %>"
-                                        aria-label="Page <%= i %>" <%=currentPage===i ? 'aria-current="page"' : ''
-                                        %>
-                                        >
-                                        <%= i %>
+                <div class="filter-section">
+                    <div class="filter-title">Brands</div>
+                    <ul>
+                        <% if (brand && brand.length > 0) { %>
+                            <% brand.forEach((br) => { %>
+                                <li class="filter-item">
+                                    <a href="/filter?<%= buildQueryString({ brand: br._id, page: null }) %>"
+                                        class="<%= selectedBrand === br._id.toString() ? 'active' : '' %>"
+                                        aria-label="Filter by <%= br.brandName %>">
+                                        <%= br.brandName %>
                                     </a>
-                                    <% } %>
-                                        <% if (currentPage < totalPages) { %>
-                                            <a class="btn"
-                                                href="/filter?<%= buildQueryString({ page: currentPage + 1 }) %>"
-                                                aria-label="Next page">Next</a>
-                                            <% } %>
+                                </li>
+                            <% }); %>
+                        <% } else { %>
+                            <li class="filter-item">No brands found</li>
+                        <% } %>
+                    </ul>
+                </div>
+
+                <div class="price-filter">
+                    <div class="filter-title">Price Range</div>
+                    <form id="priceFilterForm" method="get" action="/filter">
+                        <input type="hidden" name="search" value="<%= searchQuery || '' %>">
+                        <input type="hidden" name="category" value="<%= selectedCategory || '' %>">
+                        <input type="hidden" name="brand" value="<%= selectedBrand || '' %>">
+                        <input type="hidden" name="sort" value="<%= selectedSort || '' %>">
+                        <div class="price-range-inputs">
+                            <input type="number" name="minPrice" placeholder="Min"
+                                value="<%= selectedMinPrice || '' %>" aria-label="Minimum price">
+                            <span>to</span>
+                            <input type="number" name="maxPrice" placeholder="Max"
+                                value="<%= selectedMaxPrice || '' %>" aria-label="Maximum price">
+                        </div>
+                        <button type="submit" class="apply-button">Apply Price Filter</button>
+                    </form>
+                </div>
+            </aside>
+
+            <main class="product-grid">
+                <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
+                    <div class="search-feedback">
+                        Showing results for "<%= searchQuery %>" (<%= count || products.length %> found)
                     </div>
-                    <% } %>
+                <% } %>
+
+                <% if (products && products.length > 0) { %>
+                    <% products.forEach((product) => { %>
+                        <div class="product-card">
+                            <!-- Product Badges -->
+                            <% if (product.status === 'Out of Stock') { %>
+                                <div class="product-badge badge-out-of-stock">Out of Stock</div>
+                            <% } else if (product.isNew) { %>
+                                <div class="product-badge badge-new">New</div>
+                            <% } else if (product.regularPrice > product.salePrice) { %>
+                                <div class="product-badge badge-sale">Sale</div>
+                            <% } %>
+
+                            <button class="wishlist-btn"
+                                onclick="toggleWishlist('<%= product._id %>')"
+                                aria-label="Toggle wishlist for <%= product.productName %>">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                            
+                            <a href="/productDetails/<%= product._id %>"
+                                aria-label="View <%= product.productName %> details">
+                                <!-- Cloudinary Image URL -->
+                                <% if (product.productImage && product.productImage.length > 0 && product.productImage[0].url) { %>
+                                    <img loading="lazy"
+                                        src="<%= product.productImage[0].url %>"
+                                        alt="<%= product.productName %>"
+                                        onerror="this.src='/img/placeholder.jpg'" />
+                                <% } else { %>
+                                    <img loading="lazy"
+                                        src="/img/placeholder.jpg"
+                                        alt="<%= product.productName %>" />
+                                <% } %>
+                                
+                                <h4>
+                                    <%= product.productName.toUpperCase() %>
+                                </h4>
+                                <p class="brand">Brand: <%= product.brand?.brandName || 'Unknown' %></p>
+                                <div class="price">
+                                    ₹<%= product.salePrice.toLocaleString('en-IN') %>
+                                    <% if (product.regularPrice > product.salePrice) { %>
+                                        <span class="original-price">₹<%= product.regularPrice.toLocaleString('en-IN') %></span>
+                                    <% } %>
+                                </div>
+                            </a>
+                            
+                            <button class="add-to-cart-btn"
+                                onclick="addToCart('<%= product._id %>')"
+                                aria-label="Add <%= product.productName %> to cart"
+                                <%= product.status === 'Out of Stock' ? 'disabled' : '' %>>
+                                <i class="fas fa-shopping-cart"></i> 
+                                <%= product.status === 'Out of Stock' ? 'Out of Stock' : 'Add to Cart' %>
+                            </button>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="no-products">
+                        <h3>No products found</h3>
+                        <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
+                            <p>No results found for "<%= searchQuery %>"</p>
+                        <% } else { %>
+                            <p>Try adjusting your search or filter criteria</p>
+                        <% } %>
+                        <button class="price-button"
+                            onclick="window.location.href='/filter'"
+                            aria-label="Clear all filters">
+                            Clear Filters
+                        </button>
+                    </div>
+                <% } %>
+            </main>
+        </div>
+
+        <% if (totalPages > 1) { %>
+            <div class="pagination">
+                <% if (currentPage > 1) { %>
+                    <a class="btn" href="/filter?<%= buildQueryString({ page: currentPage - 1 }) %>"
+                        aria-label="Previous page">Previous</a>
+                <% } %>
+                
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <a class="btn <%= currentPage === i ? 'active' : '' %>"
+                        href="/filter?<%= buildQueryString({ page: i }) %>"
+                        aria-label="Page <%= i %>"
+                        <%= currentPage === i ? 'aria-current="page"' : '' %>>
+                        <%= i %>
+                    </a>
+                <% } %>
+                
+                <% if (currentPage < totalPages) { %>
+                    <a class="btn"
+                        href="/filter?<%= buildQueryString({ page: currentPage + 1 }) %>"
+                        aria-label="Next page">Next</a>
+                <% } %>
+            </div>
+        <% } %>
     </section>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 <script>
-    // Clear all filters
-    function clearAllFilters() {
-        window.location.href = '/filter';
-    }
-
     // Handle form submissions
     document.addEventListener('DOMContentLoaded', function () {
         const searchForm = document.querySelector('.search-form');
@@ -787,6 +825,7 @@
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
         });
 
+        // Debounced search
         let searchTimer;
         document.querySelector('.search-input').addEventListener('input', function () {
             clearTimeout(searchTimer);
@@ -797,18 +836,24 @@
             }, 500);
         });
 
+        // Price filter validation
         document.getElementById('priceFilterForm').addEventListener('submit', function (e) {
             const minPrice = parseFloat(this.minPrice.value);
             const maxPrice = parseFloat(this.maxPrice.value);
-            if (minPrice < 0 || maxPrice < 0 || (minPrice && maxPrice && minPrice > maxPrice)) {
+            
+            if ((minPrice && minPrice < 0) || (maxPrice && maxPrice < 0) || 
+                (minPrice && maxPrice && minPrice > maxPrice)) {
                 e.preventDefault();
                 alert('Please enter a valid price range');
             }
         });
     });
 
+    // Toggle wishlist function
     function toggleWishlist(productId) {
         const btn = document.querySelector(`.wishlist-btn[onclick="toggleWishlist('${productId}')"]`);
+        const originalContent = btn.innerHTML;
+        
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
@@ -820,28 +865,33 @@
             },
             body: JSON.stringify({ productId })
         })
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            })
-            .then(data => {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-heart"></i>';
-                if (data.success) {
-                    btn.classList.toggle('active');
-                } else {
-                    alert(data.message || 'Failed to update wishlist');
-                }
-            })
-            .catch(error => {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-heart"></i>';
-                alert('An error occurred while updating the wishlist');
-            });
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+            
+            if (data.success) {
+                btn.classList.toggle('active');
+                showNotification(data.message || 'Wishlist updated successfully', 'success');
+            } else {
+                showNotification(data.message || 'Failed to update wishlist', 'error');
+            }
+        })
+        .catch(error => {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+            showNotification('An error occurred while updating the wishlist', 'error');
+        });
     }
 
+    // Add to cart function
     function addToCart(productId) {
         const btn = document.querySelector(`.add-to-cart-btn[onclick="addToCart('${productId}')"]`);
+        const originalContent = btn.innerHTML;
+        
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
 
@@ -853,23 +903,132 @@
             },
             body: JSON.stringify({ productId, quantity: 1 })
         })
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            })
-            .then(data => {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
-                alert(data.success ? 'Product added to cart!' : data.message || 'Failed to add to cart');
-            })
-            .catch(error => {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
-                alert('An error occurred while adding to cart');
-            });
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+            
+            if (data.success) {
+                showNotification('Product added to cart successfully!', 'success');
+                updateCartCount(data.cartCount || 0);
+            } else {
+                showNotification(data.message || 'Failed to add to cart', 'error');
+            }
+        })
+        .catch(error => {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+            showNotification('An error occurred while adding to cart', 'error');
+        });
+    }
+
+    // Notification system
+    function showNotification(message, type) {
+        // Remove existing notifications
+        const existingNotifications = document.querySelectorAll('.custom-notification');
+        existingNotifications.forEach(notification => notification.remove());
+
+        const notification = document.createElement('div');
+        notification.className = `custom-notification ${type}`;
+        notification.innerHTML = `
+            <span>${message}</span>
+            <button onclick="this.parentElement.remove()">&times;</button>
+        `;
+
+        // Add styles
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: ${type === 'success' ? '#28a745' : '#dc3545'};
+            color: white;
+            border-radius: 5px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideInRight 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+
+        document.body.appendChild(notification);
+
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, 3000);
+    }
+
+    // Update cart count in header
+    function updateCartCount(count) {
+        const cartCountElements = document.querySelectorAll('.cart-count, .cart-badge');
+        cartCountElements.forEach(element => {
+            element.textContent = count;
+            element.style.display = count > 0 ? 'flex' : 'none';
+        });
+    }
+
+    // Build query string helper (if not provided by backend)
+    function buildQueryString(params) {
+        const currentParams = new URLSearchParams(window.location.search);
+        
+        Object.entries(params).forEach(([key, value]) => {
+            if (value === null || value === undefined || value === '') {
+                currentParams.delete(key);
+            } else {
+                currentParams.set(key, value);
+            }
+        });
+        
+        return currentParams.toString();
     }
 </script>
 
-</body>
+<style>
+    /* Notification animations */
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
 
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+
+    .custom-notification button {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.8rem;
+        cursor: pointer;
+        padding: 0;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+</body>
 </html>

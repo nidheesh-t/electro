@@ -1,5 +1,7 @@
+// controllers/admin/brandController.js
 const Brand = require('../../models/brandSchema');
 const Product = require('../../models/productSchema');
+const { cloudinaryRemoveImage } = require('../../helpers/uploadMiddleware');
 
 const getBrandPage = async (req, res) => {
     if (!req.session.admin) {
@@ -17,7 +19,6 @@ const getBrandPage = async (req, res) => {
         const totalBrands = await Brand.countDocuments();
         const totalPages = Math.ceil(totalBrands / limit);
 
-        // Pass success or error messages from query params
         const successMsg = req.query.success;
         const errorMsg = req.query.error;
 
@@ -35,26 +36,29 @@ const getBrandPage = async (req, res) => {
     }
 }
 
-
 const addBrand = async (req, res) => {
     try {
         const brandName = req.body.brandName.trim();
 
         const existingBrand = await Brand.findOne({
-            brandName: { $regex: new RegExp(`^${brandName}$`, "i") }
+            brandName: { $regex: new RegExp(`^${brandName}$`, "i") },
+            isDeleted: false
         });
 
         if (existingBrand) {
-            return res.redirect(
-                "/admin/brands?error=Brand+already+exists"
-            );
+            return res.redirect("/admin/brands?error=Brand+already+exists");
         }
 
-        const brandLogo = req.file.filename;
+        // Cloudinary data is now in req.cloudinaryResult
+        const brandLogo = req.cloudinaryResult ? {
+            public_id: req.cloudinaryResult.public_id,
+            url: req.cloudinaryResult.url
+        } : null;
+
         const newBrand = new Brand({
             brandName,
             brandLogo,
-            isListed: true, // default to listed when added
+            isListed: true,
         });
 
         await newBrand.save();
@@ -90,6 +94,13 @@ const listBrand = async (req, res) => {
 const deleteBrand = async (req, res) => {
     try {
         const brandId = req.query.id;
+        const brand = await Brand.findById(brandId);
+        
+        if (brand && brand.brandLogo && brand.brandLogo.public_id) {
+            // Delete image from Cloudinary
+            await cloudinaryRemoveImage(brand.brandLogo.public_id);
+        }
+        
         await Brand.updateOne({ _id: brandId }, { $set: { isDeleted: true } });
         res.redirect("/admin/brands?success=Brand+deleted+successfully");
     } catch (error) {
@@ -113,21 +124,33 @@ const getEditBrand = async (req, res) => {
 const postEditBrand = async (req, res) => {
     const { id, brandName } = req.body;
     try {
+        const brand = await Brand.findById(id);
+        if (!brand) {
+            return res.redirect("/admin/brands?error=Brand not found");
+        }
+
         const updateData = { brandName };
 
-        if (req.file) {
-            updateData.brandLogo = req.file.filename;
+        // If new image is uploaded, update image and delete old one from Cloudinary
+        if (req.cloudinaryResult) {
+            // Delete old image from Cloudinary if exists
+            if (brand.brandLogo && brand.brandLogo.public_id) {
+                await cloudinaryRemoveImage(brand.brandLogo.public_id);
+            }
+            
+            updateData.brandLogo = {
+                public_id: req.cloudinaryResult.public_id,
+                url: req.cloudinaryResult.url
+            };
         }
 
         await Brand.findByIdAndUpdate(id, updateData);
         res.redirect("/admin/brands?success=Brand updated successfully");
     } catch (err) {
+        console.error("Error updating brand:", err);
         res.redirect("/admin/brands?error=Something went wrong");
     }
 };
-
-
-
 
 module.exports = {
     getBrandPage,

@@ -1,17 +1,15 @@
+// controllers/admin/editProductController.js
 const mongoose = require("mongoose");
 const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const Brand = require("../../models/brandSchema");
-const fs = require("fs");
-const path = require("path");
-const sharp = require("sharp");
+const { cloudinaryRemoveImage, cloudinaryRemoveMultipleImage } = require('../../helpers/uploadMiddleware');
 const sanitizeHtml = require('sanitize-html');
 
 const handleError = (res, error, redirectPath = "/pageerror") => {
     console.error(error);
     res.redirect(redirectPath);
 }
-
 
 const getEditProduct = async (req, res) => {
     try {
@@ -42,8 +40,6 @@ const editProduct = async (req, res) => {
             variants,
             deletedImages
         } = req.body;
-
-        // console.log('Edit product request body:', { productName, deletedImages, files: req.files?.map(f => f.filename) });
 
         const sanitizedProductName = sanitizeHtml(productName.trim().toLowerCase());
         const sanitizedDescription = sanitizeHtml(description);
@@ -124,21 +120,6 @@ const editProduct = async (req, res) => {
             updatedAt: new Date()
         };
 
-        const allNewImages = [];
-        if (req.files?.length > 0) {
-            for (let file of req.files) {
-                const resizedPath = path.join("public", "uploads", "product-images", file.filename);
-                await sharp(file.path)
-                    .resize(440, 440, {
-                        fit: sharp.fit.inside,
-                        withoutEnlargement: true
-                    })
-                    .toFile(resizedPath);
-                allNewImages.push(file.filename);
-                // console.log(`Saved new image: ${resizedPath}`);
-            }
-        }
-
         const product = await Product.findById(id);
         let deletedImageArray = [];
         if (typeof deletedImages === 'string') {
@@ -147,38 +128,39 @@ const editProduct = async (req, res) => {
             deletedImageArray = deletedImages;
         }
 
-        const remainingImages = product.productImage.filter(img => !deletedImageArray.includes(img));
-        const totalImages = remainingImages.length + allNewImages.length;
-
-        if (totalImages === 0) {
-            return res.status(400).json({ success: false, message: "Product must have 1 to 4 images" });
+        // Delete images from Cloudinary
+        if (deletedImageArray.length > 0) {
+            const publicIdsToDelete = [];
+            for (const publicId of deletedImageArray) {
+                const imageToDelete = product.productImage.find(img => img.public_id === publicId);
+                if (imageToDelete) {
+                    publicIdsToDelete.push(publicId);
+                }
+            }
+            
+            if (publicIdsToDelete.length > 0) {
+                await cloudinaryRemoveMultipleImage(publicIdsToDelete);
+            }
         }
-        if (totalImages > 4) {
-            return res.status(400).json({ success: false, message: `Product cannot have more than 4 images. You have ${remainingImages.length} existing and tried to add ${allNewImages.length}.` });
-        }
 
-        if (allNewImages.length > 0) {
-            updateFields.productImage = [...remainingImages, ...allNewImages];
+        const remainingImages = product.productImage.filter(img => !deletedImageArray.includes(img.public_id));
+
+        // Add new images from Cloudinary
+        if (req.cloudinaryResults && req.cloudinaryResults.length > 0) {
+            updateFields.productImage = [...remainingImages, ...req.cloudinaryResults];
         } else {
             updateFields.productImage = remainingImages;
         }
 
-        if (deletedImageArray.length > 0) {
-            for (const imageName of deletedImageArray) {
-                const imagePath = path.join("public", "uploads", "product-images", imageName);
-                try {
-                    if (fs.existsSync(imagePath)) {
-                        fs.unlinkSync(imagePath);
-                        // console.log(`Deleted image: ${imagePath}`);
-                    }
-                } catch (err) {
-                    console.error(`Failed to delete image ${imagePath}:`, err);
-                }
-            }
+        const totalImages = updateFields.productImage.length;
+        if (totalImages === 0) {
+            return res.status(400).json({ success: false, message: "Product must have at least one image" });
+        }
+        if (totalImages > 4) {
+            return res.status(400).json({ success: false, message: "Product cannot have more than 4 images" });
         }
 
         await Product.findByIdAndUpdate(id, updateFields, { new: true });
-        // console.log(`Updated product ${id} with images: ${updateFields.productImage}`);
 
         res.status(200).json({
             success: true,
@@ -193,35 +175,28 @@ const editProduct = async (req, res) => {
 
 const deleteSingleImage = async (req, res) => {
     try {
-        const { imageNameToServer, productIdToServer } = req.body;
-        const product = await Product.findById(productIdToServer);
+        const { imagePublicId, productId } = req.body;
+        const product = await Product.findById(productId);
+        
         if (product.productImage.length <= 1) {
             return res.status(400).json({ status: false, message: "Product must have at least one image" });
         }
+
+        // Delete from Cloudinary
+        await cloudinaryRemoveImage(imagePublicId);
+
+        // Remove from database
         await Product.findByIdAndUpdate(
-            productIdToServer,
-            { $pull: { productImage: imageNameToServer } }
+            productId,
+            { $pull: { productImage: { public_id: imagePublicId } } }
         );
-        const imagePath = path.join(
-            __dirname,
-            "..",
-            "..",
-            "public",
-            "uploads",
-            "product-images",
-            imageNameToServer
-        );
-        if (fs.existsSync(imagePath)) {
-            fs.unlinkSync(imagePath);
-            // console.log(`Deleted image: ${imagePath}`);
-        }
+
         res.json({ status: true, message: "Image deleted successfully" });
     } catch (error) {
         console.error("Error deleting image:", error);
         res.status(500).json({ status: false, message: "Error deleting image" });
     }
 };
-
 
 const listProduct = async (req, res) => {
     try {
@@ -243,11 +218,17 @@ const unlistProduct = async (req, res) => {
     }
 };
 
-
-
 const deleteProduct = async (req, res) => {
     try {
         const id = req.query.id;
+        const product = await Product.findById(id);
+        
+        if (product && product.productImage.length > 0) {
+            // Delete all images from Cloudinary
+            const publicIds = product.productImage.map(img => img.public_id);
+            await cloudinaryRemoveMultipleImage(publicIds);
+        }
+        
         await Product.findByIdAndUpdate(id, { isDeleted: true });
         res.redirect("/admin/products");
     } catch (error) {
