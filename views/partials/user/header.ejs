@@ -5,35 +5,17 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
     <title>Electro - HTML Ecommerce Template</title>
 
-    <!-- Google font -->
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700" rel="stylesheet">
-
-    <!-- Bootstrap -->
     <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css" />
-
-    <!-- Slick -->
     <link type="text/css" rel="stylesheet" href="css/slick.css" />
     <link type="text/css" rel="stylesheet" href="css/slick-theme.css" />
-
-    <!-- nouislider -->
     <link type="text/css" rel="stylesheet" href="css/nouislider.min.css" />
-
-    <!-- FontAwesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-    <!-- Custom stlylesheet -->
     <link type="text/css" rel="stylesheet" href="css/style.css" />
 
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-		  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-		  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-		<![endif]-->
     <style>
         /* Header Styles */
         .header {
@@ -89,28 +71,52 @@
 
         .cart {
             position: relative;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .cart:hover {
+            transform: scale(1.1);
         }
 
         .cart a {
             color: #fff;
             text-decoration: none;
             font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        .cart img {
-            width: 24px;
-            height: 24px;
+        .cart i {
+            font-size: 22px;
         }
 
-        .cart .cart-count {
+        .cart-badge {
             position: absolute;
-            top: -10px;
-            right: -10px;
+            top: -8px;
+            right: -8px;
             background-color: #ff4d4d;
             color: #fff;
             border-radius: 50%;
             padding: 2px 6px;
-            font-size: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            border: 2px solid #1a1a1a;
+            min-width: 18px;
+            height: 18px;
+            text-align: center;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart:hover .cart-badge {
+            background-color: #e63939;
+        }
+
+        .hidden {
+            display: none !important;
         }
 
         .dropdown {
@@ -123,17 +129,22 @@
             color: #fff;
             text-decoration: none;
             font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .dropdown-menu {
             display: none;
             position: absolute;
             right: 0;
+            top: 100%;
             background-color: #fff;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             min-width: 160px;
             z-index: 1;
             border-radius: 4px;
+            margin-top: 5px;
         }
 
         .dropdown:hover .dropdown-menu {
@@ -153,15 +164,16 @@
         }
 
         .user-avatar {
-            width: 3.5rem;
-            height: 3.5rem;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             background: linear-gradient(to right, #c7d2fe, #93c5fd);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.3rem;
+            font-size: 14px;
+            color: #1a1a1a;
         }
 
         .auth-links a {
@@ -173,6 +185,11 @@
 
         .auth-links a:hover {
             color: #00aaff;
+        }
+
+        .logo-img {
+            height: 40px;
+            width: auto;
         }
 
         @media (max-width: 768px) {
@@ -192,16 +209,13 @@
             }
         }
     </style>
-
 </head>
 
 <body>
     <header class="header">
         <div class="container">
             <div class="logo">
-                <!-- <a href="/">ELECTRO</a> -->
-                <img src="../img/logo.png" alt="Electro Logo" class="logo-img">
-                <!-- <span class="logo-text">ELECTRO</span> -->
+                <a href="/"><img src="../img/logo.png" alt="Electro Logo" class="logo-img"></a>
             </div>
             <nav class="nav-menu">
                 <ul>
@@ -215,15 +229,15 @@
                 <% if(locals.user) { %>
                     <div class="user-avatar">
                         <%= locals.user.firstName.charAt(0).toUpperCase() %>
-                            <%= locals.user.lastName.charAt(0).toUpperCase() %>
+                        <%= locals.user.lastName.charAt(0).toUpperCase() %>
                     </div>
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle">
                             <span class="user-name">
                                 <%= locals.user.firstName.toUpperCase() %>
-                                    <%= locals.user.lastName.toUpperCase() %>
+                                <%= locals.user.lastName.toUpperCase() %>
                             </span>
-                            <i class="fas fa-chevron-down dropdown-chevron" id="dropdown-chevron"></i>
+                            <i class="fas fa-chevron-down"></i>
                         </a>
                         <div class="dropdown-menu">
                             <a href="/userProfile">Profile</a>
@@ -234,22 +248,90 @@
                     </div>
                     <div class="cart">
                         <a href="/cart" class="cart-icon">
-                            <i class="fa-solid fa-cart-shopping"></i>
-                            <% if(locals.cartCount && locals.cartCount> 0) { %>
-                                <span class="cart-badge">
-                                    <%= locals.cartCount %>
-                                </span>
-                                <% } else { %>
-                                    <span class="cart-badge"></span>
-                                    <% } %>
+                            <i class="fas fa-shopping-cart"></i>
+                            <span id="cart-count-badge" class="cart-badge hidden">0</span>
                         </a>
                     </div>
-                    <% } else { %>
-                        <div class="auth-links">
-                            <a href="/login">LOGIN</a>
-                            <a href="/signup">SIGN UP</a>
-                        </div>
-                        <% } %>
+                <% } else { %>
+                    <div class="auth-links">
+                        <a href="/login">LOGIN</a>
+                        <a href="/signup">SIGN UP</a>
+                    </div>
+                <% } %>
             </div>
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', async () => {
+                console.log('DOM loaded, fetching cart count...');
+                
+                // Initial cart fetch
+                await fetchCartCount();
+
+                // Listen for cart update events
+                document.addEventListener('cartUpdated', async () => {
+                    console.log('Cart update event received');
+                    await fetchCartCount();
+                });
+
+                async function fetchCartCount() {
+                    try {
+                        console.log('Fetching cart data...');
+                        const response = await fetch('/cart');
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
+                        const result = await response.json();
+                        console.log('Cart API response:', result);
+                        
+                        let cartCount = 0;
+                        
+                        if (result.success && result.cart && result.cart.items) {
+                            cartCount = result.cart.items.reduce((sum, item) => {
+                                return sum + (parseInt(item.quantity) || 0);
+                            }, 0);
+                        } else if (result.items) {
+                            // Alternative response structure
+                            cartCount = result.items.reduce((sum, item) => {
+                                return sum + (parseInt(item.quantity) || 0);
+                            }, 0);
+                        }
+                        
+                        console.log('Calculated cart count:', cartCount);
+                        updateCartCount(cartCount);
+                        
+                    } catch (error) {
+                        console.error('Error loading cart count:', error);
+                        updateCartCount(0);
+                    }
+                }
+
+                function updateCartCount(count) {
+                    const cartBadge = document.getElementById('cart-count-badge');
+                    console.log('Updating cart badge:', count, 'Badge element:', cartBadge);
+                    
+                    if (cartBadge) {
+                        if (count > 0) {
+                            cartBadge.textContent = count > 99 ? '99+' : count.toString();
+                            cartBadge.classList.remove('hidden');
+                            console.log('Cart badge updated with count:', count);
+                        } else {
+                            cartBadge.classList.add('hidden');
+                            cartBadge.textContent = '0';
+                            console.log('Cart badge hidden');
+                        }
+                    } else {
+                        console.error('Cart badge element not found!');
+                    }
+                }
+            });
+
+            // Function to trigger cart update
+            function triggerCartUpdate() {
+                console.log('Dispatching cart update event');
+                document.dispatchEvent(new Event('cartUpdated'));
+            }
+        </script>
     </header>

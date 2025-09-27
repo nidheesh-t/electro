@@ -4,12 +4,11 @@ const bcrypt = require("bcryptjs");
 const env = require("dotenv").config();
 const session = require("express-session");
 
-
 function generateOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-async function sendVerificationEmail(email, otp) {
+async function sendEmailChangeVerification(email, otp) {
     try {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -25,9 +24,42 @@ async function sendVerificationEmail(email, otp) {
         const info = await transporter.sendMail({
             from: process.env.NODEMAILER_EMAIL,
             to: email,
-            subject: 'Your OTP for password reset',
-            text: `Your OTP is ${otp}`,
-            html: `<p style="font-size: 1.1rem;">Hello,</p><p style="font-size: 1.1rem;">Your OTP for password reset is: <strong>${otp}</strong></p>`
+            subject: 'OTP for Email Change Verification',
+            text: `Your OTP for email change is ${otp}`,
+            html: `<p style="font-size: 1.1rem;">Hello,</p>
+                   <p style="font-size: 1.1rem;">Your OTP for email change verification is: <strong>${otp}</strong></p>
+                   <p style="font-size: 1.1rem;">This OTP will expire in 10 minutes.</p>`
+        });
+
+        return info.accepted.length > 0;
+
+    } catch (error) {
+        console.error('Error sending email:', error);
+        return false;
+    }
+}
+
+async function sendPasswordChangeVerification(email, otp) {
+    try {
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            port: 587,
+            secure: false,
+            requireTLS: true,
+            auth: {
+                user: process.env.NODEMAILER_EMAIL,
+                pass: process.env.NODEMAILER_PASSWORD
+            }
+        });
+
+        const info = await transporter.sendMail({
+            from: process.env.NODEMAILER_EMAIL,
+            to: email,
+            subject: 'OTP for Password Change Verification',
+            text: `Your OTP for password change is ${otp}`,
+            html: `<p style="font-size: 1.1rem;">Hello,</p>
+                   <p style="font-size: 1.1rem;">Your OTP for password change verification is: <strong>${otp}</strong></p>
+                   <p style="font-size: 1.1rem;">This OTP will expire in 10 minutes.</p>`
         });
 
         return info.accepted.length > 0;
@@ -47,8 +79,6 @@ const securePassword = async (password) => {
     }
 }
 
-
-
 const changeEmail = async (req, res) => {
     try {
         res.render("change-email");
@@ -65,7 +95,7 @@ const changeEmailValid = async (req, res) => {
         if (userExists) {
             const otp = generateOTP();
 
-            const emailSent = await sendVerificationEmail(email, otp);
+            const emailSent = await sendEmailChangeVerification(email, otp);
             if (emailSent) {
                 req.session.userOtp = otp;
                 req.session.userData = req.body;
@@ -85,7 +115,6 @@ const changeEmailValid = async (req, res) => {
     }
 }
 
-
 const verifyEmailOtp = async (req, res) => {
     try {
         const { otp } = req.body;
@@ -99,9 +128,7 @@ const verifyEmailOtp = async (req, res) => {
     } catch (error) {
         console.error("Error verify otp", error);
         res.status(500).send("Internal server error")
-
     }
-
 }
 
 const getNewEmailPage = async (req, res) => {
@@ -111,7 +138,6 @@ const getNewEmailPage = async (req, res) => {
         console.log("new email page not found")
         res.render('/pageNotFound')
     }
-
 }
 
 const updateEmail = async (req, res) => {
@@ -119,7 +145,19 @@ const updateEmail = async (req, res) => {
         const newEmail = req.body.newEmail;
         const userId = req.session.user;
 
+        // Check if new email already exists
+        const existingUser = await User.findOne({ email: newEmail });
+        if (existingUser) {
+            return res.render("new-email", { message: "Email already registered with another account" });
+        }
+
         await User.findByIdAndUpdate(userId, { email: newEmail });
+        
+        // Clear session after successful update
+        req.session.userOtp = null;
+        req.session.userData = null;
+        req.session.email = null;
+        
         res.redirect("/userProfile");
     } catch (error) {
         console.error("Error updating email:", error);
@@ -133,7 +171,7 @@ const resendChangeEmailOtp = async (req, res) => {
         if (!email) return res.json({ success: false, message: "Email not found in session" });
 
         const otp = generateOTP();
-        const emailSent = await sendVerificationEmail(email, otp);
+        const emailSent = await sendEmailChangeVerification(email, otp);
         console.log("Regenerated otp: ", otp);
 
         if (emailSent) {
@@ -143,7 +181,7 @@ const resendChangeEmailOtp = async (req, res) => {
             res.json({ success: false, message: "Failed to send OTP" });
         }
     } catch (error) {
-        console.error("Error in resendChangePassOtp:", error);
+        console.error("Error in resendChangeEmailOtp:", error);
         res.json({ success: false, message: "Server error" });
     }
 }
@@ -165,7 +203,7 @@ const changePasswordValid = async (req, res) => {
         const userExists = await User.findOne({ email });
         if (userExists) {
             const otp = generateOTP();
-            const emailSent = await sendVerificationEmail(email, otp);
+            const emailSent = await sendPasswordChangeVerification(email, otp);
             if (emailSent) {
                 req.session.userOtp = otp;
                 req.session.userData = req.body;
@@ -198,9 +236,7 @@ const verifyChangePassOtp = async (req, res) => {
     } catch (error) {
         console.error("Error verify otp", error);
         res.status(500).send("Internal server error")
-
     }
-
 }
 
 const getPassProfile = async (req, res) => {
@@ -257,8 +293,9 @@ const postChangePassword = async (req, res) => {
 
         req.session.userOtp = null;
         req.session.userData = null;
+        req.session.email = null;
 
-        res.render('change-password', { message: "Password reset successfully" });
+        res.render('change-password', { message: "Password changed successfully" });
 
     } catch (error) {
         console.error("Error resetting password:", error);
@@ -269,7 +306,42 @@ const postChangePassword = async (req, res) => {
     }
 }
 
+const updateProfile = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        const { firstName, lastName, phone } = req.body;
 
+        const updateData = {
+            firstName,
+            lastName,
+            phone
+        };
+
+        // Handle profile image upload if provided
+        if (req.cloudinaryResult) {
+            updateData.profileImage = req.cloudinaryResult.url;
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            updateData,
+            { new: true }
+        ).select('-password');
+
+        if (!updatedUser) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        res.json({ 
+            success: true, 
+            message: "Profile updated successfully",
+            user: updatedUser 
+        });
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
 
 module.exports = {
     changeEmail,
@@ -282,5 +354,6 @@ module.exports = {
     changePasswordValid,
     verifyChangePassOtp,
     getPassProfile,
-    postChangePassword
+    postChangePassword,
+    updateProfile
 }

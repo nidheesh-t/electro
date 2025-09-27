@@ -1,9 +1,10 @@
 const User = require("../../models/userSchema");
+const Address = require("../../models/addressSchema");
+const Order = require("../../models/orderSchema");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcryptjs");
 const env = require("dotenv").config();
 const session = require("express-session");
-
 
 function generateOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -47,7 +48,6 @@ const securePassword = async (password) => {
     }
 }
 
-
 const getForgotPassPage = async (req, res) => {
     try {
         res.render('forgot-password')
@@ -55,7 +55,6 @@ const getForgotPassPage = async (req, res) => {
         console.log("page not found")
         res.render('/pageNotFound')
     }
-
 }
 
 const forgotEmailValid = async (req, res) => {
@@ -97,9 +96,7 @@ const verifyForgotPassOtp = async (req, res) => {
     } catch (error) {
         console.error("Error verify otp", error);
         res.status(500).send("Internal server error")
-
     }
-
 }
 
 const resendOtp = async (req, res) => {
@@ -124,7 +121,6 @@ const resendOtp = async (req, res) => {
         console.error("Error resending OTP", error);
         res.status(500).send("Internal server error")
     }
-
 }
 
 const ensureValidSession = (req, res, next) => {
@@ -203,20 +199,70 @@ const postNewPassword = async (req, res) => {
 const userProfile = async (req, res) => {
     try {
         const userId = req.session.user;
-        const userData = await User.findById(userId);
-        // const addressData = await Address.findOne({ userId: userId });
+        const userData = await User.findById(userId)
+            .populate({
+                path: 'orderHistory',
+                populate: {
+                    path: 'orderedItems.product',
+                    model: 'Product'
+                },
+                options: { sort: { createdAt: -1 } }
+            })
+            .select('-password');
+
+        const addressData = await Address.findOne({ userId: userId });
+
         if (!userData) {
             return res.status(404).send("User not found");
         }
-        res.render("profile", { user: userData }); // userAddress: addressData
+
+        res.render("profile", { 
+            user: userData, 
+            userAddress: addressData 
+        });
     } catch (error) {
         console.error("Error loading user profile:", error);
         res.redirect("/pageNotFound");
     }
 }
 
+const cancelOrder = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const userId = req.session.user;
 
+        // Find order and check if it belongs to user
+        const order = await Order.findOne({ 
+            _id: orderId 
+        }).populate('orderedItems.product');
 
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        // Check if order can be cancelled (not delivered or already cancelled)
+        const nonCancellableStatuses = ['Delivered', 'Cancelled', 'Returned'];
+        if (nonCancellableStatuses.includes(order.deliveryStatus)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Cannot cancel order with status: ${order.deliveryStatus}` 
+            });
+        }
+
+        // Update order status to cancelled
+        order.deliveryStatus = 'Cancelled';
+        await order.save();
+
+        res.json({ 
+            success: true, 
+            message: "Order cancelled successfully",
+            orderId: order.orderId
+        });
+    } catch (error) {
+        console.error("Error cancelling order:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
 
 module.exports = {
     getForgotPassPage,
@@ -226,5 +272,6 @@ module.exports = {
     getResetPassPage,
     resendOtp,
     postNewPassword,
-    userProfile
+    userProfile,
+    cancelOrder
 }

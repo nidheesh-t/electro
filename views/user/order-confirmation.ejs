@@ -1,0 +1,138 @@
+<%- include("../../views/partials/user/header") %>
+
+<title>Order Confirmation | Electro Store</title>
+
+<style>
+  .confirmation-container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 0 15px;
+    text-align: center;
+  }
+
+  .confirmation-icon {
+    font-size: 80px;
+    color: #28a745;
+    margin-bottom: 20px;
+  }
+
+  .confirmation-title {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #28a745;
+  }
+
+  .confirmation-subtitle {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 30px;
+  }
+
+  .order-details {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 30px;
+    margin: 30px 0;
+    text-align: left;
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .detail-label {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .detail-value {
+    color: #666;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+  }
+
+  .btn {
+    padding: 12px 30px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary {
+    background: #D10024;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #B80020;
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+  }
+
+  .btn-secondary:hover {
+    background: #e9ecef;
+  }
+</style>
+
+<div class="confirmation-container">
+  <div class="confirmation-icon">
+    <i class="fas fa-check-circle"></i>
+  </div>
+  
+  <h1 class="confirmation-title">Order Confirmed!</h1>
+  <p class="confirmation-subtitle">Thank you for your purchase. Your order has been successfully placed.</p>
+
+  <div class="order-details">
+    <div class="detail-row">
+      <span class="detail-label">Order ID:</span>
+      <span class="detail-value"><%= order.orderId %></span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">Order Date:</span>
+      <span class="detail-value"><%= new Date(order.createdAt).toLocaleDateString('en-IN') %></span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">Total Amount:</span>
+      <span class="detail-value">₹<%= order.totalAmount.toLocaleString() %></span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">Payment Method:</span>
+      <span class="detail-value"><%= order.paymentMethod.replace('_', ' ').toUpperCase() %></span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">Shipping Address:</span>
+      <span class="detail-value">
+        <%= order.shippingAddress.address %>, <%= order.shippingAddress.city %>, 
+        <%= order.shippingAddress.state %> - <%= order.shippingAddress.pincode %>
+      </span>
+    </div>
+  </div>
+
+  <div class="action-buttons">
+    <a href="/orders/<%= order._id %>" class="btn btn-primary">
+      <i class="fas fa-eye"></i> View Order Details
+    </a>
+    <a href="/shop" class="btn btn-secondary">
+      <i class="fas fa-shopping-bag"></i> Continue Shopping
+    </a>
+  </div>
+</div>
+
+<%- include("../../views/partials/user/footer") %>

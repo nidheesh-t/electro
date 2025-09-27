@@ -2,10 +2,14 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/user/userController");
 const profileController = require("../controllers/user/profileController");
-const editProfileController =require("../controllers/user/editProfileController");
+const editProfileController = require("../controllers/user/editProfileController");
 const productController = require("../controllers/user/productController");
 const shopController = require("../controllers/user/shopController");
 const filterController = require("../controllers/user/filterController");
+const cartController = require("../controllers/user/cartController");
+const checkoutController = require("../controllers/user/checkoutController");
+const { uploadToCloudinary } = require("../helpers/uploadMiddleware");
+
 const passport = require("../config/passport");
 const User = require("../models/userSchema");
 const Review = require("../models/reviewSchema");
@@ -36,7 +40,6 @@ router.get("/api/reviews/average/:productId", async (req, res) => {
     res.status(500).json({ average: 0 });
   }
 });
-
 
 // Authentication Routes
 router.get("/signup", userController.loadSignup);
@@ -81,13 +84,18 @@ router.get('/reset-password', profileController.ensureValidSession, profileContr
 router.post('/resend-forgot-otp', profileController.resendOtp)
 router.post('/reset-password', profileController.postNewPassword)
 router.get('/userProfile', profileController.userProfile)
+router.post('/update-profile', uploadToCloudinary('profileImage'), editProfileController.updateProfile)
+router.post('/orders/:orderId/cancel', profileController.cancelOrder)
 
+// Email change routes
 router.get('/change-email', editProfileController.changeEmail)
 router.post('/change-email', editProfileController.changeEmailValid)
 router.post('/verify-email-otp', editProfileController.verifyEmailOtp)
 router.get('/new-email', editProfileController.getNewEmailPage)
 router.post("/update-email", editProfileController.updateEmail);
 router.post('/resend-email-otp', editProfileController.resendChangeEmailOtp)
+
+// Password change routes
 router.get('/change-password', editProfileController.changePassword)
 router.post('/change-password', editProfileController.changePasswordValid)
 router.post('/verify-change-pass-otp', editProfileController.verifyChangePassOtp)
@@ -96,5 +104,19 @@ router.post('/reset-password-profile', editProfileController.postChangePassword)
 
 router.post("/demo-login", userController.demoLogin);
 
+// Cart Routes
+router.get("/cart", cartController.renderCartPage);
+router.get("/api/cart", cartController.getCart);
+router.post("/cart/add", cartController.addToCart);
+router.put("/cart/update", cartController.updateCartItem);
+router.delete("/cart/remove", cartController.removeFromCart);
+router.delete("/cart/clear", cartController.clearCart);
+
+// Checkout and Order Routes
+router.get("/checkout", checkoutController.renderCheckoutPage);
+router.post("/checkout/process", checkoutController.processCheckout);
+router.get("/order-confirmation/:id", checkoutController.orderConfirmation);
+router.get("/orders", checkoutController.getUserOrders);
+router.get("/orders/:id", checkoutController.getOrderDetails);
 
 module.exports = router;

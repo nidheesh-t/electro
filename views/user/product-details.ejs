@@ -1258,7 +1258,6 @@
             <h3 class="form-title">Write a Review</h3>
             <form id="reviewForm">
               <input type="hidden" name="productId" value="<%= product._id %>">
-              <!-- Remove the userId hidden input and get it from session -->
 
               <div class="rating-input">
                 <label>Rating:</label>
@@ -1366,7 +1365,6 @@
     </div>
 
     <script>
-      // Debounce function to limit how often a function can fire
       function debounce(func, wait, immediate) {
         let timeout;
         return function () {
@@ -1382,9 +1380,7 @@
         };
       }
 
-      // Product Detail Controller
       const ProductDetailController = (function () {
-        // State
         let state = {
           currentQty: 1,
           selectedVariant: null,
@@ -1393,7 +1389,6 @@
           currentImageIndex: 0
         };
 
-        // DOM Elements
         const elements = {
           thumbnails: document.querySelectorAll('.thumbnail'),
           mainImage: document.getElementById('product-main-image'),
@@ -1411,36 +1406,28 @@
           charCount: document.getElementById('char-count')
         };
 
-        // Initialize
         function init() {
           updateQuantityButtons();
           checkWishlistStatus();
           setupEventListeners();
         }
 
-        // Setup event listeners
         function setupEventListeners() {
-          // Thumbnail click handler
           elements.thumbnails.forEach(thumb => {
             thumb.addEventListener('click', handleThumbnailClick);
           });
 
-          // Variant selection handler
           elements.variantChips.forEach(chip => {
             chip.addEventListener('click', handleVariantSelection);
           });
 
-          // Quantity button handlers
           elements.minusBtn.addEventListener('click', handleDecreaseQuantity);
           elements.plusBtn.addEventListener('click', handleIncreaseQuantity);
 
-          // Add to cart functionality
           elements.addToCartBtn.addEventListener('click', debounce(handleAddToCart, 300));
 
-          // Wishlist functionality
           elements.wishlistBtn.addEventListener('click', debounce(handleWishlistToggle, 300));
 
-          // Image zoom functionality
           elements.mainImage.addEventListener('click', openZoom);
           elements.closeZoomBtn.addEventListener('click', closeZoom);
           elements.zoomModal.addEventListener('click', e => {
@@ -1453,14 +1440,12 @@
             }
           });
 
-          // Review form functionality
           if (elements.reviewForm) {
             elements.commentTextarea.addEventListener('input', updateCharCount);
             elements.reviewForm.addEventListener('submit', handleReviewSubmit);
           }
         }
 
-        // Event Handlers
         function handleThumbnailClick() {
           elements.mainImage.src = this.dataset.fullImage;
           elements.mainImage.alt = this.alt.replace('thumbnail', 'main image');
@@ -1474,7 +1459,6 @@
           state.selectedVariant = this.dataset.variantId;
           elements.addToCartBtn.disabled = false;
 
-          // Update max quantity based on selected variant
           const variantData = JSON.parse('<%- JSON.stringify(product.variants) %>');
           const selectedVariantData = variantData.find(v => v._id === state.selectedVariant);
           state.maxQty = selectedVariantData.quantity;
@@ -1496,49 +1480,62 @@
           }
         }
 
-        async function handleAddToCart() {
-          if (!state.selectedVariant && elements.variantChips.length > 0) {
-            showNotification('Please select a variant', 'error');
-            return;
-          }
+async function handleAddToCart() {
+  if (!state.selectedVariant && elements.variantChips.length > 0) {
+    showNotification('Please select a variant', 'error');
+    return;
+  }
 
-          if ('<%= product.totalQuantity %>' <= 0) {
-            showNotification('This product is currently out of stock', 'error');
-            return;
-          }
+  if ('<%= product.totalQuantity %>' <= 0) {
+    showNotification('This product is currently out of stock', 'error');
+    return;
+  }
 
-          elements.addToCartBtn.disabled = true;
-          const originalText = elements.addToCartBtn.innerHTML;
-          elements.addToCartBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+  elements.addToCartBtn.disabled = true;
+  const originalText = elements.addToCartBtn.innerHTML;
+  elements.addToCartBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
 
-          try {
-            const response = await fetch('/cart/add', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                productId: '<%= product._id %>',
-                variantId: state.selectedVariant,
-                quantity: state.currentQty
-              })
-            });
+  try {
+    const response = await fetch('/cart/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        productId: '<%= product._id %>',
+        variantId: state.selectedVariant,
+        quantity: state.currentQty
+      })
+    });
 
-            const result = await response.json();
+    const result = await response.json();
 
-            if (result.success) {
-              showNotification('Product added to cart successfully!', 'success');
-              if (result.cartCount) {
-                updateCartCount(result.cartCount);
-              }
-            } else {
-              showNotification(result.message || 'Could not add to cart', 'error');
-            }
-          } catch (error) {
-            showNotification('Failed to add to cart. Please try again.', 'error');
-          } finally {
-            elements.addToCartBtn.disabled = false;
-            elements.addToCartBtn.innerHTML = originalText;
-          }
-        }
+    if (result.success) {
+      showNotification('Product added to cart successfully!', 'success');
+      updateCartCount(result.cartCount);
+    } else {
+      showNotification(result.message || 'Could not add to cart', 'error');
+    }
+  } catch (error) {
+    showNotification('Failed to add to cart. Please try again.', 'error');
+  } finally {
+    elements.addToCartBtn.disabled = false;
+    elements.addToCartBtn.innerHTML = originalText;
+  }
+}
+
+function updateCartCount(count) {
+  const cartBadge = document.querySelector('.cart-badge');
+  if (cartBadge) {
+    cartBadge.textContent = count;
+  } else {
+    const cartIcon = document.querySelector('.cart-icon');
+    if (cartIcon) {
+      const badge = document.createElement('span');
+      badge.className = 'cart-badge';
+      badge.textContent = count;
+      cartIcon.appendChild(badge);
+    }
+  }
+}
 
         async function handleWishlistToggle() {
           const icon = elements.wishlistBtn.querySelector('i');
@@ -1560,7 +1557,6 @@
             });
           } catch (error) {
             console.error('Wishlist error:', error);
-            // Revert visual changes if API call fails
             state.isWishlisted = !state.isWishlisted;
             if (state.isWishlisted) {
               elements.wishlistBtn.classList.add('active');
@@ -1597,14 +1593,13 @@
               productId: formData.get('productId'),
               rating: formData.get('rating'),
               comment: formData.get('comment')
-              // Remove userId - it will be taken from session on the backend
             };
 
             const response = await fetch('/reviews/submit', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest' // Add this header
+                'X-Requested-With': 'XMLHttpRequest'
               },
               body: JSON.stringify(reviewData)
             });
@@ -1612,7 +1607,6 @@
             const result = await response.json();
 
             if (result.success) {
-              // Add new review to the list
               const reviewsList = document.querySelector('.reviews-list');
               const noReviewsMsg = reviewsList.querySelector('p');
 
@@ -1627,7 +1621,6 @@
                 day: 'numeric'
               });
 
-              // Create stars HTML
               let starsHTML = '';
               for (let i = 1; i <= 5; i++) {
                 starsHTML += `<span class="star ${i <= result.review.rating ? 'filled' : ''}">★</span>`;
@@ -1655,7 +1648,6 @@
 
               reviewsList.insertBefore(reviewDiv, reviewsList.firstChild);
 
-              // Update average rating and review count
               const averageRatingElem = document.querySelector('.average-rating');
               const ratingStarsElem = document.querySelector('.rating-stars');
               const ratingCountElem = document.querySelector('.rating-count');
@@ -1665,7 +1657,6 @@
 
               averageRatingElem.textContent = result.newAverageRating.toFixed(1);
 
-              // Update rating stars
               ratingStarsElem.innerHTML = '';
               for (let i = 1; i <= 5; i++) {
                 const star = document.createElement('span');
@@ -1674,10 +1665,8 @@
                 ratingStarsElem.appendChild(star);
               }
 
-              // Update review count
               ratingCountElem.textContent = `${totalReviews} reviews`;
 
-              // Update the rating badge in product subtitle
               const ratingBadge = document.querySelector('.rating-badge');
               if (ratingBadge) {
                 ratingBadge.innerHTML = `
@@ -1705,7 +1694,6 @@
           }
         }
 
-        // Helper Functions
         function updateQuantityButtons() {
           elements.minusBtn.disabled = state.currentQty <= 1;
           elements.plusBtn.disabled = state.currentQty >= state.maxQty;
@@ -1746,13 +1734,11 @@
           elements.charCount.textContent = `${elements.commentTextarea.value.length}/500 characters`;
         }
 
-        // Public API
         return {
           init: init
         };
       })();
 
-      // Notification system
       function showNotification(message, type = 'success') {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
@@ -1775,7 +1761,6 @@
         }, 3000);
       }
 
-      // Update cart count
       function updateCartCount(count) {
         const cartBadge = document.querySelector('.cart-badge');
 
@@ -1790,7 +1775,6 @@
         }
       }
 
-      // Initialize the product detail controller when DOM is loaded
       document.addEventListener('DOMContentLoaded', ProductDetailController.init);
     </script>
   </body>

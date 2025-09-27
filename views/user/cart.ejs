@@ -1,0 +1,861 @@
+<%- include("../../views/partials/user/header") %>
+
+<title>Shopping Cart | Electro Store</title>
+
+<style>
+  :root {
+    --primary: #3a86ff;
+    --primary-dark: #2563eb;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --gray-100: #f8fafc;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-600: #475569;
+    --gray-800: #1e293b;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --radius: 0.5rem;
+    --radius-lg: 1rem;
+  }
+
+  .cart-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    min-height: 60vh;
+  }
+
+  .cart-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .cart-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--gray-800);
+    margin-bottom: 0.5rem;
+  }
+
+  .cart-subtitle {
+    color: var(--gray-600);
+    font-size: 1.5rem;
+  }
+
+  .cart-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  @media (max-width: 968px) {
+    .cart-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Cart Items Section */
+  .cart-items-section {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+  }
+
+  .section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .cart-items {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .cart-item {
+    display: grid;
+    grid-template-columns: 120px 1fr auto;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: var(--gray-100);
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .cart-item:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .cart-item.loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .item-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    border: 2px solid var(--gray-200);
+  }
+
+  .item-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .item-info h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--gray-800);
+  }
+
+  .item-info p {
+    color: var(--gray-600);
+    margin-bottom: 0.5rem;
+  }
+
+  .variant-specs {
+    font-size: 1rem;
+    color: var(--gray-600);
+    margin-top: 0.5rem;
+  }
+
+  .variant-specs span {
+    display: inline-block;
+    margin-right: 0.5rem;
+  }
+
+  .item-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: white;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    padding: 0.5rem;
+  }
+
+  .quantity-btn {
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    background: var(--gray-100);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-weight: 600;
+  }
+
+  .quantity-btn:hover:not(:disabled) {
+    background: var(--primary);
+    color: white;
+  }
+
+  .quantity-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .quantity-value {
+    min-width: 2rem;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .remove-btn {
+    background: none;
+    border: 1px solid var(--error);
+    color: var(--error);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+  }
+
+  .remove-btn:hover {
+    background: var(--error);
+    color: white;
+  }
+
+  .item-pricing {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+
+  .item-price {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gray-800);
+  }
+
+  .item-total {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  /* Cart Summary */
+  .cart-summary {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 2rem;
+  }
+
+  .summary-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--gray-800);
+  }
+
+  .summary-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+  }
+
+  .summary-row:not(:last-child) {
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .summary-label {
+    color: var(--gray-600);
+  }
+
+  .summary-value {
+    font-weight: 600;
+    color: var(--gray-800);
+  }
+
+  .final-total {
+    border-top: 2px solid var(--gray-300);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    padding-top: 1rem;
+  }
+
+  .shipping-note {
+    font-size: 1rem;
+    color: var(--success);
+    text-align: center;
+    margin: 1rem 0;
+    padding: 0.5rem;
+    background: #f0fdf4;
+    border-radius: var(--radius);
+    border: 1px solid #bbf7d0;
+  }
+
+  .checkout-btn {
+    width: 100%;
+    padding: 1rem 2rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .checkout-btn:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+  }
+
+  .checkout-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .continue-shopping {
+    text-align: center;
+    margin-top: 1rem;
+  }
+
+  .continue-shopping a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: color 0.3s ease;
+  }
+
+  .continue-shopping a:hover {
+    color: var(--primary-dark);
+  }
+
+  /* Empty Cart */
+  .empty-cart {
+    text-align: center;
+    padding: 4rem 2rem;
+    grid-column: 1 / -1;
+  }
+
+  .empty-cart-icon {
+    font-size: 4rem;
+    color: var(--gray-300);
+    margin-bottom: 1rem;
+  }
+
+  .empty-cart h2 {
+    font-size: 2rem;
+    color: var(--gray-600);
+    margin-bottom: 1rem;
+  }
+
+  .empty-cart p {
+    color: var(--gray-600);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+  }
+
+  /* Loading States */
+  .loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s ease-in-out infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Notifications */
+  .notification {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    z-index: 1000;
+    max-width: 400px;
+    animation: slideInRight 0.3s ease;
+    border-left: 4px solid;
+  }
+
+  .notification.success {
+    background: #f0fdf4;
+    color: var(--success);
+    border-left-color: var(--success);
+  }
+
+  .notification.error {
+    background: #fef2f2;
+    color: var(--error);
+    border-left-color: var(--error);
+  }
+
+  .notification.warning {
+    background: #fffbeb;
+    color: var(--warning);
+    border-left-color: var(--warning);
+  }
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .cart-container {
+      margin: 1rem auto;
+      padding: 0 0.5rem;
+    }
+
+    .cart-title {
+      font-size: 2.5rem;
+    }
+
+    .cart-items-section,
+    .cart-summary {
+      padding: 1.5rem;
+    }
+
+    .cart-item {
+      grid-template-columns: 1fr;
+      text-align: center;
+      gap: 1rem;
+    }
+
+    .item-image {
+      justify-self: center;
+    }
+
+    .item-pricing {
+      align-items: center;
+    }
+
+    .item-actions {
+      justify-content: center;
+    }
+  }
+
+  /* Animation for item removal */
+  @keyframes slideOutLeft {
+    to {
+      opacity: 0;
+      transform: translateX(-100%);
+    }
+  }
+
+  .item-removing {
+    animation: slideOutLeft 0.3s ease forwards;
+  }
+</style>
+
+<div class="cart-container">
+  <div class="cart-header">
+    <h1 class="cart-title">🛒 Your Shopping Cart</h1>
+    <p class="cart-subtitle">Review your items and proceed to checkout</p>
+  </div>
+
+  <div id="cart-content">
+    <% if (cart && cart.items && cart.items.length > 0) { %>
+      <div class="cart-layout">
+        <div class="cart-items-section">
+          <h2 class="section-title">
+            <i class="fas fa-shopping-cart"></i>
+            Cart Items (<%= cart.items.length %>)
+          </h2>
+          <div class="cart-items">
+            <% cart.items.forEach(item => { %>
+              <div class="cart-item" data-item-id="<%= item._id %>" id="item-<%= item._id %>">
+                <img src="<%= item.productId.productImage?.[0]?.url || '/img/placeholder.jpg' %>" 
+                     alt="<%= item.productId.productName %>" 
+                     class="item-image"
+                     onerror="this.src='/img/placeholder.jpg'">
+                
+                <div class="item-details">
+                  <div class="item-info">
+                    <h3><%= item.productId.productName %></h3>
+                    <p class="item-price">₹<%= item.price.toLocaleString() %> each</p>
+                    
+                    <% if (item.variantSpecs && item.variantSpecs.length > 0) { %>
+                      <div class="variant-specs">
+                        <% item.variantSpecs.forEach((spec, index) => { %>
+                          <span><strong><%= spec.name %>:</strong> <%= spec.value %></span>
+                          <% if (index < item.variantSpecs.length - 1) { %> • <% } %>
+                        <% }) %>
+                      </div>
+                    <% } %>
+                  </div>
+
+                  <div class="item-actions">
+                    <div class="quantity-controls">
+                      <button class="quantity-btn minus" 
+                              onclick="cartManager.updateQuantity('<%= item._id %>', '<%= item.quantity - 1 %>')"
+                              <%= item.quantity <= 1 ? 'disabled' : '' %>>
+                        <i class="fas fa-minus"></i>
+                      </button>
+                      <span class="quantity-value"><%= item.quantity %></span>
+                      <button class="quantity-btn plus" 
+                              onclick="cartManager.updateQuantity('<%= item._id %>', '<%= item.quantity + 1 %>')">
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
+                    
+                    <button class="remove-btn" onclick="cartManager.removeItem('<%= item._id %>')">
+                      <i class="fas fa-trash"></i> Remove
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="item-pricing">
+                  <div class="item-total">₹<%= item.totalPrice.toLocaleString() %></div>
+                  <div class="item-price"><%= item.quantity %> × ₹<%= item.price.toLocaleString() %></div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+        
+        <div class="cart-summary">
+          <h3 class="summary-title">Order Summary</h3>
+          <div class="summary-details">
+            <div class="summary-row">
+              <span class="summary-label">Subtotal (<%= cart.items.reduce((sum, item) => sum + item.quantity, 0) %> items)</span>
+              <span class="summary-value">₹<%= cart.cartTotal.toLocaleString() %></span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Shipping</span>
+              <span class="summary-value"><%= cart.shippingCharge === 0 ? 'FREE' : '₹' + cart.shippingCharge %></span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Discount</span>
+              <span class="summary-value">-₹<%= cart.discount.toLocaleString() %></span>
+            </div>
+            <div class="summary-row final-total">
+              <span class="summary-label">Total Amount</span>
+              <span class="summary-value">₹<%= cart.finalTotal.toLocaleString() %></span>
+            </div>
+          </div>
+
+          <% if (cart.shippingCharge === 0) { %>
+            <div class="shipping-note">🎉 You qualify for free shipping!</div>
+          <% } else { %>
+            <div class="shipping-note">Add ₹<%= (999 - cart.cartTotal).toLocaleString() %> more for free shipping!</div>
+          <% } %>
+
+          <button class="checkout-btn" onclick="cartManager.proceedToCheckout()">
+            <i class="fas fa-lock"></i> Proceed to Checkout
+          </button>
+
+          <div class="continue-shopping">
+            <a href="/shop">
+              <i class="fas fa-arrow-left"></i> Continue Shopping
+            </a>
+          </div>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="empty-cart">
+        <div class="empty-cart-icon">🛒</div>
+        <h2>Your cart is empty</h2>
+        <p>Looks like you haven't added any items to your cart yet.</p>
+        <button onclick="location.href='/shop'" class="checkout-btn" style="background: var(--success); max-width: 300px; margin: 0 auto;">
+          <i class="fas fa-shopping-bag"></i> Continue Shopping
+        </button>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  class CartManager {
+    constructor() {
+      this.isLoading = false;
+      this.updateCartCount();
+    }
+
+    async refreshCart() {
+      try {
+        const response = await fetch('/api/cart');
+        const result = await response.json();
+        
+        if (result.success) {
+          this.renderCart(result.cart);
+        } else {
+          this.showEmptyCart();
+        }
+      } catch (error) {
+        console.error('Error refreshing cart:', error);
+        this.showError('Failed to refresh cart');
+      }
+    }
+
+    renderCart(cart) {
+      const cartContent = document.getElementById('cart-content');
+      
+      if (!cart || !cart.items || cart.items.length === 0) {
+        this.showEmptyCart();
+        return;
+      }
+
+      cartContent.innerHTML = `
+        <div class="cart-layout">
+          <div class="cart-items-section">
+            <h2 class="section-title">
+              <i class="fas fa-shopping-cart"></i>
+              Cart Items (${cart.items.length})
+            </h2>
+            <div class="cart-items">
+              ${cart.items.map(item => this.renderCartItem(item)).join('')}
+            </div>
+          </div>
+          
+          <div class="cart-summary">
+            <h3 class="summary-title">Order Summary</h3>
+            <div class="summary-details">
+              <div class="summary-row">
+                <span class="summary-label">Subtotal (${cart.items.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
+                <span class="summary-value">₹${cart.cartTotal?.toLocaleString() || '0'}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">Shipping</span>
+                <span class="summary-value">${cart.shippingCharge === 0 ? 'FREE' : '₹' + cart.shippingCharge}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">Discount</span>
+                <span class="summary-value">-₹${cart.discount?.toLocaleString() || '0'}</span>
+              </div>
+              <div class="summary-row final-total">
+                <span class="summary-label">Total Amount</span>
+                <span class="summary-value">₹${cart.finalTotal?.toLocaleString() || '0'}</span>
+              </div>
+            </div>
+
+            ${cart.shippingCharge === 0 ? 
+              '<div class="shipping-note">🎉 You qualify for free shipping!</div>' : 
+              `<div class="shipping-note">Add ₹${(999 - cart.cartTotal).toLocaleString()} more for free shipping!</div>`
+            }
+
+            <button class="checkout-btn" onclick="cartManager.proceedToCheckout()">
+              <i class="fas fa-lock"></i> Proceed to Checkout
+            </button>
+
+            <div class="continue-shopping">
+              <a href="/shop">
+                <i class="fas fa-arrow-left"></i> Continue Shopping
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    renderCartItem(item) {
+      const product = item.productId;
+      const variantSpecs = item.variantSpecs || item.variantDetails || [];
+      
+      return `
+        <div class="cart-item" data-item-id="${item._id}" id="item-${item._id}">
+          <img src="${product.productImage?.[0]?.url || '/img/placeholder.jpg'}" 
+               alt="${product.productName}" 
+               class="item-image"
+               onerror="this.src='/img/placeholder.jpg'">
+          
+          <div class="item-details">
+            <div class="item-info">
+              <h3>${this.escapeHtml(product.productName)}</h3>
+              <p class="item-price">₹${item.price?.toLocaleString() || '0'} each</p>
+              
+              ${variantSpecs.length > 0 ? `
+                <div class="variant-specs">
+                  ${variantSpecs.map(spec => 
+                    `<span><strong>${this.escapeHtml(spec.name)}:</strong> ${this.escapeHtml(spec.value)}</span>`
+                  ).join(' • ')}
+                </div>
+              ` : ''}
+            </div>
+
+            <div class="item-actions">
+              <div class="quantity-controls">
+                <button class="quantity-btn minus" 
+                        onclick="cartManager.updateQuantity('${item._id}', ${item.quantity - 1})"
+                        ${item.quantity <= 1 ? 'disabled' : ''}>
+                  <i class="fas fa-minus"></i>
+                </button>
+                <span class="quantity-value">${item.quantity}</span>
+                <button class="quantity-btn plus" 
+                        onclick="cartManager.updateQuantity('${item._id}', ${item.quantity + 1})">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+              
+              <button class="remove-btn" onclick="cartManager.removeItem('${item._id}')">
+                <i class="fas fa-trash"></i> Remove
+              </button>
+            </div>
+          </div>
+          
+          <div class="item-pricing">
+            <div class="item-total">₹${item.totalPrice?.toLocaleString() || '0'}</div>
+            <div class="item-price">${item.quantity} × ₹${item.price?.toLocaleString() || '0'}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    async updateQuantity(itemId, newQuantity) {
+      if (newQuantity < 1) return;
+
+      const itemElement = document.getElementById(`item-${itemId}`);
+      if (itemElement) {
+        itemElement.classList.add('loading');
+      }
+
+      try {
+        const response = await fetch('/cart/update', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itemId, quantity: newQuantity })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          this.refreshCart();
+          this.updateCartCount();
+          this.showNotification('Quantity updated successfully', 'success');
+        } else {
+          this.showNotification(result.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error updating quantity:', error);
+        this.showNotification('Failed to update quantity', 'error');
+      } finally {
+        if (itemElement) {
+          itemElement.classList.remove('loading');
+        }
+      }
+    }
+
+    async removeItem(itemId) {
+      if (!confirm('Are you sure you want to remove this item from your cart?')) return;
+
+      const itemElement = document.getElementById(`item-${itemId}`);
+      if (itemElement) {
+        itemElement.classList.add('item-removing');
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      try {
+        const response = await fetch('/cart/remove', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itemId })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          this.refreshCart();
+          this.updateCartCount();
+          this.showNotification('Item removed from cart', 'success');
+        } else {
+          this.showNotification(result.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error removing item:', error);
+        this.showNotification('Failed to remove item', 'error');
+      }
+    }
+
+    proceedToCheckout() {
+      window.location.href = '/checkout';
+    }
+
+    updateCartCount() {
+      // Update cart badge in header
+      const cartCount = document.querySelectorAll('.cart-item').length;
+      const cartBadge = document.querySelector('.cart-badge');
+      if (cartBadge) {
+        cartBadge.textContent = cartCount;
+      }
+    }
+
+    showEmptyCart() {
+      document.getElementById('cart-content').innerHTML = `
+        <div class="empty-cart">
+          <div class="empty-cart-icon">🛒</div>
+          <h2>Your cart is empty</h2>
+          <p>Looks like you haven't added any items to your cart yet.</p>
+          <button onclick="location.href='/shop'" class="checkout-btn" style="background: var(--success); max-width: 300px; margin: 0 auto;">
+            <i class="fas fa-shopping-bag"></i> Continue Shopping
+          </button>
+        </div>
+      `;
+    }
+
+    showNotification(message, type = 'success') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      
+      const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        warning: 'fa-exclamation-triangle'
+      };
+
+      notification.innerHTML = `
+        <i class="fas ${icons[type]}"></i>
+        <div>${message}</div>
+      `;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+    showError(message) {
+      this.showNotification(message, 'error');
+    }
+
+    escapeHtml(unsafe) {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  }
+
+  // Initialize cart manager when DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    window.cartManager = new CartManager();
+  });
+</script>
+
+<%- include("../../views/partials/user/footer") %>
